@@ -3,12 +3,13 @@ package com.motherbase.apirest.model.motherbase;
 import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.motherbase.department.*;
 import com.motherbase.apirest.model.ressource.Ressources;
-import com.motherbase.apirest.model.staff.Staff;
 
 import javax.persistence.*;
 
 @Entity
 public class MotherBase {
+    private Long id;
+    private String pseudo;
     private Integer nbDollar;
     private Integer nbFuel;
     private Integer nbBiology;
@@ -19,10 +20,13 @@ public class MotherBase {
     private RandD randD;
     private Development development;
     private Infirmary infirmary;
-    private Long id;
 
 
     public MotherBase() {
+    }
+
+    public MotherBase(String pseudo) {
+        this.pseudo = pseudo;
         this.nbDollar = Ressources.Dollar.getInitialStock();
         this.nbFuel = Ressources.Fuel.getInitialStock();
         this.nbBiology = Ressources.Biology.getInitialStock();
@@ -33,6 +37,11 @@ public class MotherBase {
         this.randD = new RandD();
         this.development = new Development();
         this.infirmary = new Infirmary();
+        this.randD.setMotherBase(this);
+        this.waitingRoom.setMotherBase(this);
+        this.barrack.setMotherBase(this);
+        this.development.setMotherBase(this);
+        this.infirmary.setMotherBase(this);
 
     }
 
@@ -47,35 +56,40 @@ public class MotherBase {
         }*/
 
     }
-
     @Transient
-    public boolean changeStaffDepartment(Staff staff, Department department) throws Exception {
-        // search the staff in departments
-        Department departmentOut = null;
-        if (waitingRoom.isInDepartment(staff)) {
-            departmentOut = waitingRoom;
-        } else if (barrack.isInDepartment(staff)) {
-            departmentOut = barrack;
-        } else if (randD.isInDepartment(staff)) {
-            departmentOut = randD;
-        } else if (development.isInDepartment(staff)) {
-            departmentOut = development;
-        } else if (infirmary.isInDepartment(staff)) {
-            departmentOut = infirmary;
-        } else {
-            throw new Exception("The staff " + staff.getName() + " is ghost");
+    public boolean canUpgrade(Department department) {
+        if (department.getRank().equals(RankDepartment.values()[RankDepartment.values().length - 1])) {
+            return false;
         }
-
-        if (department.isPossibleToAddStuff()) {
-            department.addStaff(staff);
-            departmentOut.removeStaff(staff);
-            return true;
+        RankDepartment nextRank = RankDepartment.values()[department.getRank().ordinal() + 1];
+        if (this.getNbFuel() < nextRank.getCostFuel()) {
+            return false;
         }
-        return false;
-
-
+        if (this.getNbBiology() < nextRank.getCostBiology()) {
+            return false;
+        }
+        if (this.getNbDollar() < nextRank.getCostDollar()) {
+            return false;
+        }
+        if (this.getNbGem() < nextRank.getCostGem()) {
+            return false;
+        }
+        return this.getNbOre() >= nextRank.getCostOre();
     }
 
+    @Transient
+    public void upgrade(Department department) {
+        if (department.getRank().equals(RankDepartment.values()[RankDepartment.values().length - 1])) {
+            return;
+        }
+        RankDepartment nextRank = RankDepartment.values()[department.getRank().ordinal() + 1];
+        this.removeNbDollar(nextRank.getCostDollar());
+        this.removeNbFuel(nextRank.getCostFuel());
+        this.removeNbBiology(nextRank.getCostBiology());
+        this.removeNbGem(nextRank.getCostGem());
+        this.removeNbOre(nextRank.getCostOre());
+        department.upgradeRank();
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
@@ -86,6 +100,7 @@ public class MotherBase {
     public void setId(Long id) {
         this.id = id;
     }
+
 
     @Transient
     public Integer addNbDollar(Integer dollar) {
@@ -112,6 +127,30 @@ public class MotherBase {
         return this.nbGem += gem;
     }
 
+    @Transient
+    public Integer removeNbDollar(Integer dollar) {
+        return this.nbDollar -= dollar;
+    }
+
+    @Transient
+    public Integer removeNbFuel(Integer fuel) {
+        return this.nbFuel -= fuel;
+    }
+
+    @Transient
+    public Integer removeNbBiology(Integer biology) {
+        return this.nbBiology -= biology;
+    }
+
+    @Transient
+    public Integer removeNbOre(Integer ore) {
+        return this.nbOre -= ore;
+    }
+
+    @Transient
+    public Integer removeNbGem(Integer gem) {
+        return this.nbGem -= gem;
+    }
     public Integer getNbDollar() {
         return nbDollar;
     }
@@ -152,7 +191,7 @@ public class MotherBase {
         this.nbGem = nbGem;
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "motherBase")
     public WaitingRoom getWaitingRoom() {
         return waitingRoom;
     }
@@ -161,7 +200,7 @@ public class MotherBase {
         this.waitingRoom = waitingRoom;
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "motherBase")
     public Barrack getBarrack() {
         return barrack;
     }
@@ -170,7 +209,7 @@ public class MotherBase {
         this.barrack = barrack;
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "motherBase")
     public RandD getRandD() {
         return randD;
     }
@@ -179,7 +218,7 @@ public class MotherBase {
         this.randD = randD;
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "motherBase")
     public Development getDevelopment() {
         return development;
     }
@@ -188,12 +227,20 @@ public class MotherBase {
         this.development = development;
     }
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "motherBase")
     public Infirmary getInfirmary() {
         return infirmary;
     }
 
     public void setInfirmary(Infirmary infirmary) {
         this.infirmary = infirmary;
+    }
+
+    public String getPseudo() {
+        return pseudo;
+    }
+
+    public void setPseudo(String pseudo) {
+        this.pseudo = pseudo;
     }
 }

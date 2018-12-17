@@ -1,5 +1,6 @@
 package com.motherbase.apirest.model.staff;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.motherbase.apirest.model.motherbase.department.Department;
 
 import javax.persistence.*;
@@ -17,12 +18,13 @@ public class Staff {
     public Staff() {
     }
 
-    public Staff(String name, RankStaff rankCombat, RankStaff rankRandD, RankStaff rankDevelopment, RankStaff rankInfirmary) {
+    public Staff(String name, RankStaff rankCombat, RankStaff rankRandD, RankStaff rankDevelopment, RankStaff rankInfirmary, Department department) {
         this.name = name;
         this.rankCombat = rankCombat;
         this.rankRandD = rankRandD;
         this.rankDevelopment = rankDevelopment;
         this.rankInfirmary = rankInfirmary;
+        this.department = department;
     }
 
     public void upgradeCombat() {
@@ -125,7 +127,8 @@ public class Staff {
     }
 
     @ManyToOne
-    @JoinColumn(name = "department", referencedColumnName = "ID")
+    @JoinColumn
+    @JsonIgnore
     public Department getDepartment() {
         return department;
     }

@@ -1,5 +1,7 @@
 package com.motherbase.apirest.model.motherbase.department;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.staff.Staff;
 
 import javax.persistence.*;
@@ -8,9 +10,11 @@ import java.util.Set;
 
 @Entity
 public abstract class Department {
+    protected MotherBase motherBase;
     protected RankDepartment rank;
     protected Set<Staff> listStaff;
     protected Long id;
+
 
     public Department() {
         this.listStaff = new HashSet<>();
@@ -28,10 +32,6 @@ public abstract class Department {
         return this.getSizeStaff() < this.getMaxStaff();
     }
 
-    @Transient
-    public boolean isInDepartment(Staff staff) {
-        return this.listStaff.contains(staff);
-    }
 
     public void addStaff(Staff staff) {
         this.listStaff.add(staff);
@@ -80,4 +80,14 @@ public abstract class Department {
     }
 
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn
+    @JsonIgnore
+    public MotherBase getMotherBase() {
+        return motherBase;
+    }
+
+    public void setMotherBase(MotherBase motherBase) {
+        this.motherBase = motherBase;
+    }
 }
