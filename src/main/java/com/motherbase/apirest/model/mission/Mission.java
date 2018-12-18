@@ -13,6 +13,7 @@ public class Mission {
     private Integer rewardBiology;
     private Integer rewardOre;
     private Integer rewardGem;
+
     //private Set<Staff> rewardStaff;
 
 
