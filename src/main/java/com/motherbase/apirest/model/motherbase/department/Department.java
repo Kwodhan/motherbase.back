@@ -5,6 +5,7 @@ import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.staff.Staff;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,10 +15,12 @@ public abstract class Department {
     protected RankDepartment rank;
     protected Set<Staff> listStaff;
     protected Long id;
+    protected Date dateBeginUpgrade;
 
 
     public Department() {
         this.listStaff = new HashSet<>();
+        this.dateBeginUpgrade = null;
     }
 
     public void upgradeRank() {
@@ -35,10 +38,12 @@ public abstract class Department {
 
     public void addStaff(Staff staff) {
         this.listStaff.add(staff);
+        staff.setDepartment(this);
     }
 
     public void removeStaff(Staff staff) {
         this.listStaff.remove(staff);
+        staff.setDepartment(null);
     }
 
     @Transient
@@ -89,5 +94,13 @@ public abstract class Department {
 
     public void setMotherBase(MotherBase motherBase) {
         this.motherBase = motherBase;
+    }
+
+    public Date getDateBeginUpgrade() {
+        return dateBeginUpgrade;
+    }
+
+    public void setDateBeginUpgrade(Date dateBeginUpgrade) {
+        this.dateBeginUpgrade = dateBeginUpgrade;
     }
 }

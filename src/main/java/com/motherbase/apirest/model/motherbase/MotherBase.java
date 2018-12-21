@@ -1,20 +1,20 @@
 package com.motherbase.apirest.model.motherbase;
 
+
 import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.motherbase.department.*;
-import com.motherbase.apirest.model.ressource.Ressources;
+import com.motherbase.apirest.model.resource.Resource;
 
 import javax.persistence.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 public class MotherBase {
     private Long id;
     private String pseudo;
-    private Integer nbDollar;
-    private Integer nbFuel;
-    private Integer nbBiology;
-    private Integer nbOre;
-    private Integer nbGem;
+    private Map<Resource, Integer> resources;
     private WaitingRoom waitingRoom;
     private Barrack barrack;
     private RandD randD;
@@ -27,11 +27,10 @@ public class MotherBase {
 
     public MotherBase(String pseudo) {
         this.pseudo = pseudo;
-        this.nbDollar = Ressources.Dollar.getInitialStock();
-        this.nbFuel = Ressources.Fuel.getInitialStock();
-        this.nbBiology = Ressources.Biology.getInitialStock();
-        this.nbOre = Ressources.Ore.getInitialStock();
-        this.nbGem = Ressources.Gem.getInitialStock();
+        this.resources = new HashMap<>();
+        for (Resource resource : Resource.values()) {
+            this.resources.putIfAbsent(resource, resource.getInitialStock());
+        }
         this.waitingRoom = new WaitingRoom();
         this.barrack = new Barrack();
         this.randD = new RandD();
@@ -46,12 +45,11 @@ public class MotherBase {
     }
 
     public void receiveRewardMission(Mission mission) {
-        this.addNbDollar(mission.getRewardDollar());
-        this.addNbBiology(mission.getRewardBiology());
-        this.addNbFuel(mission.getRewardFuel());
-        this.addNbGem(mission.getRewardGem());
-        this.addNbOre(mission.getRewardOre());
-       /* for(Staff staff : mission.getRewardStaff() ){
+        for (Map.Entry<Resource, Integer> reward : mission.getRewardResources().entrySet()) {
+            this.addResource(reward.getKey(), reward.getValue());
+
+        }
+       /*for(Staff staff : mission.getRewardStaff() ){
             this.waitingRoom.addStaff(staff);
         }*/
 
@@ -62,33 +60,29 @@ public class MotherBase {
             return false;
         }
         RankDepartment nextRank = RankDepartment.values()[department.getRank().ordinal() + 1];
-        if (this.getNbFuel() < nextRank.getCostFuel()) {
-            return false;
+        for (Map.Entry<Resource, Integer> cost : nextRank.getCostResource().entrySet()) {
+            if (this.getResource(cost.getKey()) < cost.getValue()) {
+                return false;
+            }
         }
-        if (this.getNbBiology() < nextRank.getCostBiology()) {
-            return false;
-        }
-        if (this.getNbDollar() < nextRank.getCostDollar()) {
-            return false;
-        }
-        if (this.getNbGem() < nextRank.getCostGem()) {
-            return false;
-        }
-        return this.getNbOre() >= nextRank.getCostOre();
+        return true;
     }
 
-    @Transient
-    public void upgrade(Department department) {
+    public void triggerUpgrade(Department department) {
         if (department.getRank().equals(RankDepartment.values()[RankDepartment.values().length - 1])) {
             return;
         }
         RankDepartment nextRank = RankDepartment.values()[department.getRank().ordinal() + 1];
-        this.removeNbDollar(nextRank.getCostDollar());
-        this.removeNbFuel(nextRank.getCostFuel());
-        this.removeNbBiology(nextRank.getCostBiology());
-        this.removeNbGem(nextRank.getCostGem());
-        this.removeNbOre(nextRank.getCostOre());
+        for (Map.Entry<Resource, Integer> cost : nextRank.getCostResource().entrySet()) {
+            this.removeResource(cost.getKey(), cost.getValue());
+        }
+        department.setDateBeginUpgrade(new Date());
+    }
+
+    public Department upgrade(Department department) {
         department.upgradeRank();
+        department.setDateBeginUpgrade(null);
+        return department;
     }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -102,95 +96,20 @@ public class MotherBase {
     }
 
 
-    @Transient
-    public Integer addNbDollar(Integer dollar) {
-        return this.nbDollar += dollar;
+    public Integer addResource(Resource resource, Integer add) {
+        Integer actualRes = this.resources.get(resource);
+        return this.resources.replace(resource, actualRes + add);
+
     }
 
-    @Transient
-    public Integer addNbFuel(Integer fuel) {
-        return this.nbFuel += fuel;
+    public Integer removeResource(Resource resource, Integer add) {
+        Integer actualRes = this.resources.get(resource);
+        return this.resources.replace(resource, actualRes - add);
     }
 
-    @Transient
-    public Integer addNbBiology(Integer biology) {
-        return this.nbBiology += biology;
+    public Integer getResource(Resource resource) {
+        return this.resources.get(resource);
     }
-
-    @Transient
-    public Integer addNbOre(Integer ore) {
-        return this.nbOre += ore;
-    }
-
-    @Transient
-    public Integer addNbGem(Integer gem) {
-        return this.nbGem += gem;
-    }
-
-    @Transient
-    public Integer removeNbDollar(Integer dollar) {
-        return this.nbDollar -= dollar;
-    }
-
-    @Transient
-    public Integer removeNbFuel(Integer fuel) {
-        return this.nbFuel -= fuel;
-    }
-
-    @Transient
-    public Integer removeNbBiology(Integer biology) {
-        return this.nbBiology -= biology;
-    }
-
-    @Transient
-    public Integer removeNbOre(Integer ore) {
-        return this.nbOre -= ore;
-    }
-
-    @Transient
-    public Integer removeNbGem(Integer gem) {
-        return this.nbGem -= gem;
-    }
-    public Integer getNbDollar() {
-        return nbDollar;
-    }
-
-    public void setNbDollar(Integer nbDollar) {
-        this.nbDollar = nbDollar;
-    }
-
-    public Integer getNbFuel() {
-        return nbFuel;
-    }
-
-    public void setNbFuel(Integer nbFuel) {
-        this.nbFuel = nbFuel;
-    }
-
-    public Integer getNbBiology() {
-        return nbBiology;
-    }
-
-    public void setNbBiology(Integer nbBiology) {
-        this.nbBiology = nbBiology;
-    }
-
-    public Integer getNbOre() {
-        return nbOre;
-    }
-
-    public void setNbOre(Integer nbOre) {
-        this.nbOre = nbOre;
-    }
-
-    public Integer getNbGem() {
-        return nbGem;
-    }
-
-    public void setNbGem(Integer nbGem) {
-        this.nbGem = nbGem;
-    }
-
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "motherBase")
     public WaitingRoom getWaitingRoom() {
         return waitingRoom;
@@ -242,5 +161,17 @@ public class MotherBase {
 
     public void setPseudo(String pseudo) {
         this.pseudo = pseudo;
+    }
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable
+    @MapKeyClass(Resource.class)
+    @MapKeyEnumerated(EnumType.ORDINAL)
+    public Map<Resource, Integer> getResources() {
+        return resources;
+    }
+
+    public void setResources(Map<Resource, Integer> resources) {
+        this.resources = resources;
     }
 }

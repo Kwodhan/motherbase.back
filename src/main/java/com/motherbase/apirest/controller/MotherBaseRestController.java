@@ -2,8 +2,10 @@ package com.motherbase.apirest.controller;
 
 import com.motherbase.apirest.controller.requestcustom.CreateMotherBaseRequest;
 import com.motherbase.apirest.controller.requestcustom.MoveStaffBaseResquest;
+import com.motherbase.apirest.controller.responsecustom.UpgradeDepartmentResponse;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.motherbase.department.Department;
+import com.motherbase.apirest.model.motherbase.department.RankDepartment;
 import com.motherbase.apirest.model.staff.Staff;
 import com.motherbase.apirest.service.DepartmentService;
 import com.motherbase.apirest.service.MotherBaseService;
@@ -70,16 +72,24 @@ public class MotherBaseRestController {
         }
     }
 
-    @RequestMapping(value = "/upgrade/{id}", method = RequestMethod.PATCH, produces = "application/json", consumes = "application/json")
-    ResponseEntity<MotherBase> upgrade(@PathVariable("id") Long id) {
+    @RequestMapping(value = "/triggerUpgrade/{id}", method = RequestMethod.PATCH, produces = "application/json", consumes = "application/json")
+    ResponseEntity<UpgradeDepartmentResponse> triggerUpgrade(@PathVariable("id") Long id) {
         Department department = departmentService.findWithMotherBaseById(id);
-        if (motherBaseService.upgrade(department.getMotherBase(), department)) {
-            return new ResponseEntity<>(department.getMotherBase(), HttpStatus.OK);
+
+        if (motherBaseService.triggerUpgradeDepartment(department.getMotherBase(), department)) {
+            RankDepartment nextRank = RankDepartment.values()[department.getRank().ordinal() + 1];
+            return new ResponseEntity<>(new UpgradeDepartmentResponse(nextRank.getDurationUpgrade(), department, department.getMotherBase()), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT);
         }
 
     }
 
+    @RequestMapping(value = "/upgrade/{id}", method = RequestMethod.PATCH, produces = "application/json", consumes = "application/json")
+    ResponseEntity<Department> upgrade(@PathVariable("id") Long id) {
+        Department department = departmentService.findWithMotherBaseById(id);
+        return new ResponseEntity<>(motherBaseService.upgradeDepartment(department.getMotherBase(), department), HttpStatus.OK);
+
+    }
 
 }

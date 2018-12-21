@@ -15,5 +15,7 @@ public interface MotherBaseService {
 
     boolean moveStaff(Staff staff, Department department);
 
-    boolean upgrade(MotherBase motherBase, Department department);
+    boolean triggerUpgradeDepartment(MotherBase motherBase, Department department);
+
+    Department upgradeDepartment(MotherBase motherBase, Department department);
 }

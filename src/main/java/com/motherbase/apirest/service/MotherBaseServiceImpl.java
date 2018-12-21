@@ -3,7 +3,6 @@ package com.motherbase.apirest.service;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.motherbase.department.Department;
 import com.motherbase.apirest.model.staff.Staff;
-import com.motherbase.apirest.repository.DepartmentRepository;
 import com.motherbase.apirest.repository.MotherBaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,9 +15,6 @@ public class MotherBaseServiceImpl implements MotherBaseService {
 
     @Autowired
     private MotherBaseRepository motherBaseRepository;
-
-    @Autowired
-    private DepartmentRepository departmentRepository;
 
     public MotherBaseServiceImpl() {
     }
@@ -49,19 +45,24 @@ public class MotherBaseServiceImpl implements MotherBaseService {
         }
         staff.getDepartment().removeStaff(staff);
         department.addStaff(staff);
-        staff.setDepartment(department);
         return true;
 
+    }
+    @Override
+    @Transactional
+    public boolean triggerUpgradeDepartment(MotherBase motherBase, Department department) {
+        if (motherBase.canUpgrade(department)) {
+            motherBase.triggerUpgrade(department);
+            return true;
+        }
+        return false;
     }
 
     @Override
     @Transactional
-    public boolean upgrade(MotherBase motherBase, Department department) {
-        if (motherBase.canUpgrade(department)) {
-            motherBase.upgrade(department);
-            return true;
-        }
-        return false;
+    public Department upgradeDepartment(MotherBase motherBase, Department department) {
+
+        return motherBase.upgrade(department);
     }
 
 
