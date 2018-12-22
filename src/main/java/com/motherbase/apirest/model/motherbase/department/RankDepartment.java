@@ -1,5 +1,6 @@
 package com.motherbase.apirest.model.motherbase.department;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.motherbase.apirest.model.resource.Resource;
 
 import java.time.Duration;
@@ -32,6 +33,11 @@ public enum RankDepartment {
             this.costResource.put(Resource.values()[indexResource], resource);
         }
 
+    }
+
+    @JsonValue
+    public int toValue() {
+        return ordinal();
     }
 
     public Integer getCostResource(Resource resource) {

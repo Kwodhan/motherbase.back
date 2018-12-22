@@ -76,6 +76,7 @@ public abstract class Department {
         this.listStaff = listStaff;
     }
 
+    @Enumerated(EnumType.ORDINAL)
     public RankDepartment getRank() {
         return rank;
     }
