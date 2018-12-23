@@ -31,6 +31,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jersey</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.4.0</version>
+        </dependency>
 
         <!-- Connection BDD -->
         <dependency>
@@ -58,6 +67,8 @@
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
+
+
     </dependencies>
 
     <build>
