@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  *
  */
-public class MotherBaseRessourcesResponse {
+public class MotherBaseRessourcesResponse extends CustomerResponse {
     private Long id;
     private Map<Resource, Integer> resources;
 

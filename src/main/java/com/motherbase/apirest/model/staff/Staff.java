@@ -4,74 +4,44 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.motherbase.apirest.model.motherbase.department.Department;
 
 import javax.persistence.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 public class Staff {
     private Department department;
     private String name;
-    private RankStaff rankCombat;
-    private RankStaff rankRandD;
-    private RankStaff rankDevelopment;
-    private RankStaff rankInfirmary;
+    private Map<Skill, RankStaff> skillSet;
+
     private Long id;
 
     public Staff() {
     }
 
-    public Staff(String name, RankStaff rankCombat, RankStaff rankRandD, RankStaff rankDevelopment, RankStaff rankInfirmary, Department department) {
+    public Staff(String name, Department department, RankStaff... rankSkills) {
+        if (rankSkills.length != Skill.values().length) {
+            throw new IllegalArgumentException("There are not the same number between rankSkill arguments and number of skills in Skill enum ");
+        }
         this.name = name;
-        this.rankCombat = rankCombat;
-        this.rankRandD = rankRandD;
-        this.rankDevelopment = rankDevelopment;
-        this.rankInfirmary = rankInfirmary;
+        this.skillSet = new HashMap<>();
+        int indexRank = 0;
+        for (Skill skill : Skill.values()) {
+            this.skillSet.put(skill, rankSkills[indexRank]);
+            indexRank++;
+        }
         this.department = department;
     }
 
-    public void upgradeCombat() {
-        if (this.rankCombat != RankStaff.S) {
-            this.rankCombat = RankStaff.values()[this.rankCombat.ordinal() + 1];
+    public void upgradeSkill(Skill skill) {
+        if (this.skillSet.get(skill) != RankStaff.values()[RankStaff.values().length - 1]) {
+            this.skillSet.replace(skill, RankStaff.values()[this.skillSet.get(skill).ordinal() + 1]);
         }
     }
 
-    public void upgradeRandD() {
-        if (this.rankRandD != RankStaff.S) {
-            this.rankRandD = RankStaff.values()[this.rankRandD.ordinal() + 1];
-        }
-    }
 
-    public void upgradeDevelopment() {
-        if (this.rankDevelopment != RankStaff.S) {
-            this.rankDevelopment = RankStaff.values()[this.rankDevelopment.ordinal() + 1];
-        }
-    }
-
-    public void upgradeInfirmary() {
-        if (this.rankInfirmary != RankStaff.S) {
-            this.rankInfirmary = RankStaff.values()[this.rankInfirmary.ordinal() + 1];
-        }
-    }
-
-    public void downgradCombat() {
-        if (this.rankCombat != RankStaff.E) {
-            this.rankCombat = RankStaff.values()[this.rankCombat.ordinal() - 1];
-        }
-    }
-
-    public void downgradRandD() {
-        if (this.rankRandD != RankStaff.E) {
-            this.rankRandD = RankStaff.values()[this.rankRandD.ordinal() - 1];
-        }
-    }
-
-    public void downgradDevelopment() {
-        if (this.rankDevelopment != RankStaff.E) {
-            this.rankDevelopment = RankStaff.values()[this.rankDevelopment.ordinal() - 1];
-        }
-    }
-
-    public void downgradInfirmary() {
-        if (this.rankInfirmary != RankStaff.E) {
-            this.rankInfirmary = RankStaff.values()[this.rankInfirmary.ordinal() - 1];
+    public void downgradSkill(Skill skill) {
+        if (this.skillSet.get(skill) != RankStaff.values()[0]) {
+            this.skillSet.replace(skill, RankStaff.values()[this.skillSet.get(skill).ordinal() - 1]);
         }
     }
 
@@ -83,37 +53,6 @@ public class Staff {
         this.name = name;
     }
 
-    public RankStaff getRankCombat() {
-        return rankCombat;
-    }
-
-    public void setRankCombat(RankStaff rankCombat) {
-        this.rankCombat = rankCombat;
-    }
-
-    public RankStaff getRankRandD() {
-        return rankRandD;
-    }
-
-    public void setRankRandD(RankStaff rankRandD) {
-        this.rankRandD = rankRandD;
-    }
-
-    public RankStaff getRankDevelopment() {
-        return rankDevelopment;
-    }
-
-    public void setRankDevelopment(RankStaff rankDevelopment) {
-        this.rankDevelopment = rankDevelopment;
-    }
-
-    public RankStaff getRankInfirmary() {
-        return rankInfirmary;
-    }
-
-    public void setRankInfirmary(RankStaff rankInfirmary) {
-        this.rankInfirmary = rankInfirmary;
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -126,8 +65,7 @@ public class Staff {
         this.id = id;
     }
 
-    @ManyToOne
-    @JoinColumn
+    @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
     public Department getDepartment() {
         return department;
@@ -135,5 +73,18 @@ public class Staff {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable
+    @MapKeyClass(Skill.class)
+    @MapKeyEnumerated(EnumType.ORDINAL)
+    // TODO : KEY to column name
+    public Map<Skill, RankStaff> getSkillSet() {
+        return skillSet;
+    }
+
+    public void setSkillSet(Map<Skill, RankStaff> skillSet) {
+        this.skillSet = skillSet;
     }
 }

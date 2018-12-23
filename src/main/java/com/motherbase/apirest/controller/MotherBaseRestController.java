@@ -2,9 +2,12 @@ package com.motherbase.apirest.controller;
 
 import com.motherbase.apirest.controller.requestcustom.CreateMotherBaseRequest;
 import com.motherbase.apirest.controller.requestcustom.MoveStaffBaseResquest;
+import com.motherbase.apirest.controller.responsecustom.MoveStaffResponse;
 import com.motherbase.apirest.controller.responsecustom.UpgradeDepartmentResponse;
+import com.motherbase.apirest.model.motherbase.MessagesMotherBase;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.motherbase.department.Department;
+import com.motherbase.apirest.model.motherbase.department.MessagesDepartment;
 import com.motherbase.apirest.model.motherbase.department.RankDepartment;
 import com.motherbase.apirest.model.staff.Staff;
 import com.motherbase.apirest.service.DepartmentService;
@@ -18,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin
 @RestController
 @RequestMapping(value = "/motherbase")
 public class MotherBaseRestController {
@@ -36,11 +38,11 @@ public class MotherBaseRestController {
     @RequestMapping(value = "", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     ResponseEntity<MotherBase> create(@RequestBody CreateMotherBaseRequest createMotherBaseRequest) {
         if (!motherBaseService.findByPseudo(createMotherBaseRequest.getPseudo()).isEmpty()) {
-            log.info("[WARN] " + createMotherBaseRequest.getPseudo() + " already exist");
+            log.warn("[WARN] " + createMotherBaseRequest.getPseudo() + " already exist");
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
         MotherBase l1 = this.motherBaseService.create(new MotherBase(createMotherBaseRequest.getPseudo()));
-        log.info("[INFO] " + l1.getId() + " join Diamond Dogs");
+        log.info("[INFO] " + l1.getId() + " create mother base");
         return new ResponseEntity<>(l1, HttpStatus.OK);
     }
 
@@ -50,26 +52,34 @@ public class MotherBaseRestController {
         List<MotherBase> motherBases = this.motherBaseService.findByPseudo(pseudo);
 
         if (motherBases.isEmpty()) {
+            log.warn("[WARN] " + pseudo + " have no mother base");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else {
+            log.info("[INFO] " + pseudo + " get motherBase " + motherBases.get(0).getId());
             return new ResponseEntity<>(motherBases.get(0), HttpStatus.OK);
         }
     }
 
     @RequestMapping(value = "/moveStaff", method = RequestMethod.PATCH, produces = "application/json", consumes = "application/json")
-    ResponseEntity<MotherBase> moveStaff(@RequestBody MoveStaffBaseResquest moveStaffBaseResquest) {
+    ResponseEntity<MoveStaffResponse> moveStaff(@RequestBody MoveStaffBaseResquest moveStaffBaseResquest) {
         Staff staff = staffService.findById(moveStaffBaseResquest.getIdStaff());
         Department department = departmentService.findById(moveStaffBaseResquest.getIdDepartment());
         if (staff == null) {
+            log.warn("[WARN] Staff " + moveStaffBaseResquest.getIdStaff() + " doesn't exist");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         if (department == null) {
+            log.warn("[WARN] Department " + moveStaffBaseResquest.getIdDepartment() + " doesn't exist");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         if (motherBaseService.moveStaff(staff, department)) {
+            log.info("[INFO] Staff " + staff.getId() + " move to " + department.getId());
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT);
+            log.warn("[WARN] Staff " + staff.getId() + " can not move to " + department.getId());
+            MoveStaffResponse res = new MoveStaffResponse();
+            res.setMsgError(MessagesMotherBase.CAN_NOT_MOVE_STAFF.getMsg());
+            return new ResponseEntity<>(res, HttpStatus.CONFLICT);
         }
     }
 
@@ -78,10 +88,14 @@ public class MotherBaseRestController {
         Department department = departmentService.findWithMotherBaseById(id);
 
         if (motherBaseService.triggerUpgradeDepartment(department.getMotherBase(), department)) {
+            log.info("[INFO] Department " + department.getId() + " under construction to rank " + RankDepartment.values()[department.getRank().ordinal() + 1]);
             RankDepartment nextRank = RankDepartment.values()[department.getRank().ordinal() + 1];
             return new ResponseEntity<>(new UpgradeDepartmentResponse(nextRank.getDurationUpgrade(), department, department.getMotherBase()), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT);
+            log.warn("[WARN] Department " + department.getId() + " can not upgrade from rank " + department.getRank());
+            UpgradeDepartmentResponse res = new UpgradeDepartmentResponse();
+            res.setMsgError(MessagesDepartment.CAN_NOT_UPGRADE_RESOURCE_MISSING.getMsg());
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
     }
@@ -89,6 +103,7 @@ public class MotherBaseRestController {
     @RequestMapping(value = "/upgrade/{id}", method = RequestMethod.PATCH, produces = "application/json", consumes = "application/json")
     ResponseEntity<Department> upgrade(@PathVariable("id") Long id) {
         Department department = departmentService.findWithMotherBaseById(id);
+        log.info("[INFO] Department " + department.getId() + " finish construction to rank " + RankDepartment.values()[department.getRank().ordinal() + 1]);
         return new ResponseEntity<>(motherBaseService.upgradeDepartment(department.getMotherBase(), department), HttpStatus.OK);
 
     }

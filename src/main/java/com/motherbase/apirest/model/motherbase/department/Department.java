@@ -67,7 +67,7 @@ public abstract class Department {
         this.id = id;
     }
 
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public Set<Staff> getListStaff() {
         return listStaff;
     }
@@ -87,7 +87,6 @@ public abstract class Department {
 
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn
     @JsonIgnore
     public MotherBase getMotherBase() {
         return motherBase;

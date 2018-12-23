@@ -49,9 +49,7 @@ public class MotherBase {
             this.addResource(reward.getKey(), reward.getValue());
 
         }
-       /*for(Staff staff : mission.getRewardStaff() ){
-            this.waitingRoom.addStaff(staff);
-        }*/
+
 
     }
     @Transient
@@ -167,6 +165,7 @@ public class MotherBase {
     @CollectionTable
     @MapKeyClass(Resource.class)
     @MapKeyEnumerated(EnumType.ORDINAL)
+    // TODO : KEY to column name
     public Map<Resource, Integer> getResources() {
         return resources;
     }

@@ -21,8 +21,6 @@ public enum Resource {
         this.initialStock = initialStock;
     }
 
-    Resource() {
-    }
 
     @Transient
     public Integer getSellPrice() {

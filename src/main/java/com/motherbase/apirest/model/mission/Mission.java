@@ -6,13 +6,22 @@ import com.motherbase.apirest.model.staff.Staff;
 import javax.persistence.*;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Entity
 public class Mission {
     private Long id;
 
-    private HashMap<Resource, Integer> rewardResources;
-    //private Set<Staff> rewardStaff;
+    private Map<Resource, Integer> rewardResources;
+    private Set<RewardStaff> rewardStaffs;
+    /**
+     * reward resource not sure
+     */
+    private Set<RewardResource> percentRewardResources;
+
+
+    private Integer force;
 
 
     public Mission() {
@@ -24,35 +33,46 @@ public class Mission {
         for (Integer resource : rewards) {
             this.rewardResources.put(Resource.values()[indexResource], resource);
         }
-
     }
 
-    public Integer getRewardResource(Resource resource) {
-
-        if (!this.rewardResources.containsKey(resource)) {
-            return 0;
-        }
-        return this.rewardResources.get(resource);
-
-    }
-
-    public HashMap<Resource, Integer> getRewardResources() {
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable
+    @MapKeyClass(Resource.class)
+    @MapKeyEnumerated(EnumType.ORDINAL)
+    public Map<Resource, Integer> getRewardResources() {
         return rewardResources;
     }
 
-    public void setRewardResources(HashMap<Resource, Integer> rewardResources) {
+    public void setRewardResources(Map<Resource, Integer> rewardResources) {
         this.rewardResources = rewardResources;
     }
 
-    /*
-        @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
-        public Set<Staff> getRewardStaff() {
-            return rewardStaff;
-        }
+    @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    public Set<RewardResource> getPercentRewardResources() {
+        return percentRewardResources;
+    }
 
-        public void setRewardStaff(HashSet<Staff> rewardStaff) {
-            this.rewardStaff = rewardStaff;
-        }*/
+    public void setPercentRewardResources(Set<RewardResource> percentRewardResources) {
+        this.percentRewardResources = percentRewardResources;
+    }
+
+    @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    public Set<RewardStaff> getRewardStaffs() {
+        return rewardStaffs;
+    }
+
+    public void setRewardStaffs(Set<RewardStaff> rewardStaffs) {
+        this.rewardStaffs = rewardStaffs;
+    }
+
+    public Integer getForce() {
+        return force;
+    }
+
+    public void setForce(Integer force) {
+        this.force = force;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
