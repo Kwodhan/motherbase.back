@@ -16,4 +16,5 @@ public interface MotherBaseRepository extends JpaRepository<MotherBase, Long> {
 
     @Query("select a from MotherBase a where a.pseudo = :pseudo")
     List<MotherBase> findMotherBaseByPseudo(@Param("pseudo") String pseudo);
+
 }

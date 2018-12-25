@@ -29,14 +29,37 @@ public class RewardStaff {
 
     Mission mission;
 
-    public RewardStaff(Long id, Skill skill, RankStaff rankMax, Integer numberStuff, Integer percent, Integer numberFixRankMax, Mission mission) {
-        this.id = id;
+    public RewardStaff(Skill skill, RankStaff rankMax, Integer numberStuff, Integer percent, Integer numberFixRankMax) {
+        if (percent > 100 || percent < 0) {
+            throw new IllegalArgumentException("percent must be between 0 and 100");
+        }
+        if (numberFixRankMax > numberStuff) {
+            throw new IllegalArgumentException("numberFixRankMax doesn't be superior at numberStuff ");
+        }
         this.skill = skill;
         this.rankMax = rankMax;
         this.numberStuff = numberStuff;
         this.percent = percent;
         this.numberFixRankMax = numberFixRankMax;
-        this.mission = mission;
+    }
+
+    public RewardStaff(Skill skill, RankStaff rankMax, Integer numberStuff, Integer percent) {
+        if (percent > 100 || percent < 0) {
+            throw new IllegalArgumentException("percent must be between 0 and 100");
+        }
+        this.skill = skill;
+        this.rankMax = rankMax;
+        this.numberStuff = numberStuff;
+        this.percent = percent;
+        this.numberFixRankMax = numberStuff;
+    }
+
+    public RewardStaff(Skill skill, RankStaff rankMax, Integer numberStuff) {
+        this.skill = skill;
+        this.rankMax = rankMax;
+        this.numberStuff = numberStuff;
+        this.percent = 100;
+        this.numberFixRankMax = numberStuff;
     }
 
     public RewardStaff() {

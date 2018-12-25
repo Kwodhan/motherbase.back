@@ -1,5 +1,6 @@
 package com.motherbase.apirest.service;
 
+import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.motherbase.department.Department;
 import com.motherbase.apirest.model.staff.Staff;
@@ -65,5 +66,27 @@ public class MotherBaseServiceImpl implements MotherBaseService {
         return motherBase.upgrade(department);
     }
 
+    @Override
+    @Transactional
+    public boolean takeMission(MotherBase motherBase, Mission mission) {
+
+        if (motherBase.canTakeMission(mission)) {
+            motherBase.takeMission(mission);
+            return true;
+        }
+        return false;
+    }
+
+
+    @Override
+    @Transactional
+    public boolean finishMission(MotherBase motherBase, Mission mission) {
+        if (motherBase.isFinishMission(mission)) {
+            motherBase.finishMission(mission);
+            return true;
+        }
+        return false;
+
+    }
 
 }

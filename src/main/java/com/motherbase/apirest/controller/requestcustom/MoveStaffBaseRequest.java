@@ -1,6 +1,6 @@
 package com.motherbase.apirest.controller.requestcustom;
 
-public class MoveStaffBaseResquest {
+public class MoveStaffBaseRequest {
     private Long idStaff;
     private Long idDepartment;
 

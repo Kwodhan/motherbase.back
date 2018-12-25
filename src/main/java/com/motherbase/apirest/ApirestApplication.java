@@ -1,6 +1,7 @@
 package com.motherbase.apirest;
 
 import com.motherbase.apirest.config.WebSecurity;
+import com.motherbase.apirest.dbinitializer.DbInitializerMission;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -12,7 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.motherbase.apirest.controller", "com.motherbase.apirest.service"})
-@Import({WebSecurity.class})
+@Import({WebSecurity.class, DbInitializerMission.class})
 @EntityScan("com.motherbase.apirest.model")
 @EnableJpaRepositories("com.motherbase.apirest.repository")
 public class ApirestApplication {
@@ -25,6 +26,7 @@ public class ApirestApplication {
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 
 }
 

@@ -14,12 +14,13 @@ public class RewardResource {
     Integer percent;
     Mission mission;
 
-    public RewardResource(Long id, Resource resource, Integer number, Integer percent, Mission mission) {
-        this.id = id;
+    public RewardResource(Resource resource, Integer number, Integer percent) {
+        if (percent > 100 || percent < 0) {
+            throw new IllegalArgumentException("percent must be between 0 and 100");
+        }
         this.resource = resource;
         this.number = number;
         this.percent = percent;
-        this.mission = mission;
     }
 
     public RewardResource() {

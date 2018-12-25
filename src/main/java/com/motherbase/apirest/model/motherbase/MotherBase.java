@@ -1,6 +1,7 @@
 package com.motherbase.apirest.model.motherbase;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.motherbase.department.*;
 import com.motherbase.apirest.model.resource.Resource;
@@ -20,6 +21,12 @@ public class MotherBase {
     private RandD randD;
     private Development development;
     private Infirmary infirmary;
+    /**
+     * Mission in progresse
+     * The date of begin mission
+     */
+    private Map<Mission, Date> missionInProgress;
+    private Integer rankHistory;
 
 
     public MotherBase() {
@@ -31,6 +38,7 @@ public class MotherBase {
         for (Resource resource : Resource.values()) {
             this.resources.putIfAbsent(resource, resource.getInitialStock());
         }
+        this.rankHistory = 1;
         this.waitingRoom = new WaitingRoom();
         this.barrack = new Barrack();
         this.randD = new RandD();
@@ -44,13 +52,11 @@ public class MotherBase {
 
     }
 
-    public void receiveRewardMission(Mission mission) {
+    private void receiveRewardMission(Mission mission) {
         for (Map.Entry<Resource, Integer> reward : mission.getRewardResources().entrySet()) {
             this.addResource(reward.getKey(), reward.getValue());
 
         }
-
-
     }
     @Transient
     public boolean canUpgrade(Department department) {
@@ -81,6 +87,36 @@ public class MotherBase {
         department.upgradeRank();
         department.setDateBeginUpgrade(null);
         return department;
+    }
+
+    public boolean canTakeMission(Mission mission) {
+        if (this.rankHistory > mission.getRankMission()) {
+            return false;
+        }
+        return !this.getMissionInProgress().containsKey(mission);
+    }
+
+    public void takeMission(Mission mission) {
+        if (this.rankHistory > mission.getRankMission()) {
+            return;
+        }
+        this.missionInProgress.put(mission, new Date());
+
+    }
+
+    public boolean isFinishMission(Mission mission) {
+        Date today = new Date();
+        Date finish = new Date(this.getMissionInProgress().get(mission).getTime() + mission.getDurationCompleted().toMillis());
+
+        return today.after(finish);
+    }
+
+    public MotherBase finishMission(Mission mission) {
+
+        this.missionInProgress.remove(mission);
+        this.receiveRewardMission(mission);
+        return this;
+
     }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -172,5 +208,26 @@ public class MotherBase {
 
     public void setResources(Map<Resource, Integer> resources) {
         this.resources = resources;
+    }
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable
+    @MapKeyClass(Mission.class)
+    @JsonIgnore
+    public Map<Mission, Date> getMissionInProgress() {
+        return missionInProgress;
+    }
+
+    public void setMissionInProgress(Map<Mission, Date> missionInProgress) {
+        this.missionInProgress = missionInProgress;
+    }
+
+    @JsonIgnore
+    public Integer getRankHistory() {
+        return rankHistory;
+    }
+
+    public void setRankHistory(Integer rankHistory) {
+        this.rankHistory = rankHistory;
     }
 }

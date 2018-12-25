@@ -1,11 +1,10 @@
 package com.motherbase.apirest.model.mission;
 
 import com.motherbase.apirest.model.resource.Resource;
-import com.motherbase.apirest.model.staff.Staff;
 
 import javax.persistence.*;
+import java.time.Duration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,15 +22,36 @@ public class Mission {
 
     private Integer force;
 
+    private Integer rankMission;
+
+    private String description;
+
+    private Duration durationCompleted;
+
 
     public Mission() {
     }
 
-    public Mission(HashSet<Staff> rewardStaff, Integer... rewards) {
+    public Mission(Integer force, String description, Integer rankMission, Duration durationCompleted, Set<RewardStaff> rewardStaffs, Set<RewardResource> percentRewardResources, Integer... rewards) {
+        if (rewards.length != Resource.values().length) {
+            throw new IllegalArgumentException("There are not the same number between rewards arguments and number of resources in Resource enum ");
+        }
+        this.force = force;
+        this.description = description;
+        this.rankMission = rankMission;
+        this.durationCompleted = durationCompleted;
+        this.percentRewardResources = percentRewardResources;
+        for (RewardStaff rewardStaff : rewardStaffs) {
+            rewardStaff.setMission(this);
+        }
+        for (RewardResource rewardResource : percentRewardResources) {
+            rewardResource.setMission(this);
+        }
+        this.rewardStaffs = rewardStaffs;
         this.rewardResources = new HashMap<>();
         int indexResource = 0;
-        for (Integer resource : rewards) {
-            this.rewardResources.put(Resource.values()[indexResource], resource);
+        for (Resource resource : Resource.values()) {
+            this.rewardResources.put(resource, rewards[indexResource++]);
         }
     }
 
@@ -84,5 +104,27 @@ public class Mission {
         this.id = id;
     }
 
+    public Integer getRankMission() {
+        return rankMission;
+    }
 
+    public void setRankMission(Integer rankMission) {
+        this.rankMission = rankMission;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Duration getDurationCompleted() {
+        return durationCompleted;
+    }
+
+    public void setDurationCompleted(Duration durationCompleted) {
+        this.durationCompleted = durationCompleted;
+    }
 }

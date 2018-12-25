@@ -26,8 +26,7 @@ public class Staff {
         this.skillSet = new HashMap<>();
         int indexRank = 0;
         for (Skill skill : Skill.values()) {
-            this.skillSet.put(skill, rankSkills[indexRank]);
-            indexRank++;
+            this.skillSet.put(skill, rankSkills[indexRank++]);
         }
         this.department = department;
     }
