@@ -20,7 +20,7 @@ public interface MotherBaseService {
 
     Department upgradeDepartment(MotherBase motherBase, Department department);
 
-    boolean takeMission(MotherBase motherBase, Mission mission);
+    boolean takeMission(MotherBase motherBase, Mission mission, List<Long> fighters);
 
     boolean finishMission(MotherBase motherBase, Mission mission);
 }

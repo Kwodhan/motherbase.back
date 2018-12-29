@@ -1,5 +1,6 @@
 package com.motherbase.apirest.model.mission;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.motherbase.apirest.model.resource.Resource;
 
 import javax.persistence.*;
@@ -27,6 +28,8 @@ public class Mission {
     private String description;
 
     private Duration durationCompleted;
+
+    private Set<MissionInProgress> missionInProgresses;
 
 
     public Mission() {
@@ -126,5 +129,15 @@ public class Mission {
 
     public void setDurationCompleted(Duration durationCompleted) {
         this.durationCompleted = durationCompleted;
+    }
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "mission")
+    public Set<MissionInProgress> getMissionInProgresses() {
+        return missionInProgresses;
+    }
+
+    public void setMissionInProgresses(Set<MissionInProgress> missionInProgresses) {
+        this.missionInProgresses = missionInProgresses;
     }
 }

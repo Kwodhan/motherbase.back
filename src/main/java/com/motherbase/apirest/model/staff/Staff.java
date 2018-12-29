@@ -8,17 +8,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Entity
-public class Staff {
+public class Staff extends Fighter {
     private Department department;
     private String name;
     private Map<Skill, RankStaff> skillSet;
 
-    private Long id;
+
 
     public Staff() {
     }
 
     public Staff(String name, Department department, RankStaff... rankSkills) {
+        super();
         if (rankSkills.length != Skill.values().length) {
             throw new IllegalArgumentException("There are not the same number between rankSkill arguments and number of skills in Skill enum ");
         }
@@ -53,16 +54,7 @@ public class Staff {
     }
 
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID")
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
@@ -86,4 +78,15 @@ public class Staff {
     public void setSkillSet(Map<Skill, RankStaff> skillSet) {
         this.skillSet = skillSet;
     }
+
+
+    @Override
+    @JsonIgnore
+    @Transient
+    public Integer getForce() {
+        return this.skillSet.get(Skill.Combat).getPoint();
+    }
+
+
+
 }

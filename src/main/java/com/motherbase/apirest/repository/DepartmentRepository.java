@@ -9,8 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
-    @Query("select a from Department a where a.id = :id")
-    Department findDepartmentById(@Param("id") Long id);
 
     @Query("select a from Department a left join fetch a.motherBase m where a.id = :id")
     Department findDepartmentWithMotherBaseById(@Param("id") Long id);

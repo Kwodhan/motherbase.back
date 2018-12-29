@@ -108,7 +108,7 @@ public class MotherBaseRestController {
             log.warn("[WARN] Department " + department.getId() + " can not upgrade from rank " + department.getRank());
             UpgradeDepartmentResponse res = new UpgradeDepartmentResponse();
             res.setMsgError(MessagesDepartment.CAN_NOT_UPGRADE_RESOURCE_MISSING.getMsg());
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            return new ResponseEntity<>(res, HttpStatus.CONFLICT);
         }
 
     }
@@ -121,6 +121,7 @@ public class MotherBaseRestController {
 
     }
 
+    // TODO : move to mission controller
     @RequestMapping(value = "/beginMission", method = RequestMethod.PATCH, produces = "application/json", consumes = "application/json")
     ResponseEntity<BeginMissionResponse> beginMission(@RequestBody BeginMissionRequest beginMissionRequest) {
         Mission mission = this.missionService.findMissionById(beginMissionRequest.getIdMission());
@@ -134,18 +135,19 @@ public class MotherBaseRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        if (motherBaseService.takeMission(motherBase, mission)) {
+        if (motherBaseService.takeMission(motherBase, mission, beginMissionRequest.getFighterList())) {
             log.info("[INFO] MotherBase " + motherBase.getId() + " take Mission " + mission.getId());
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             log.warn("[WARN] MotherBase " + motherBase.getId() + " can not take Mission " + mission.getId());
             BeginMissionResponse res = new BeginMissionResponse();
             res.setMsgError(MessagesMission.CAN_NOT_TAKE_MISSION.getMsg());
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            return new ResponseEntity<>(res, HttpStatus.CONFLICT);
         }
 
     }
 
+    // TODO : move to mission controller
     @RequestMapping(value = "/finishMission", method = RequestMethod.GET, produces = "application/json", consumes = "application/json")
     ResponseEntity<MotherBase> finishMission(@RequestBody FinishMissionRequest finishMissionRequest) {
         Mission mission = this.missionService.findMissionById(finishMissionRequest.getIdMission());
@@ -158,8 +160,10 @@ public class MotherBaseRestController {
             log.warn("[WARN] MotherBase " + finishMissionRequest.getIdMotherBase() + " doesn't exist");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        if (motherBase.getMissionInProgress().get(mission) == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        boolean haveMission = motherBase.getMissionInProgress().stream().filter(x -> x.getMission().getId().equals(mission.getId())).findFirst().isPresent();
+        if (!haveMission) {
+            log.warn("[WARN] MotherBase " + motherBase.getId() + " doesn't have mission " + mission.getId());
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
         if (this.motherBaseService.finishMission(motherBase, mission)) {

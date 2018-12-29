@@ -8,6 +8,8 @@ public interface MissionService {
 
     Mission create(Mission mission);
 
+    Mission update(Mission mission);
+
     Mission findMissionById(Long id);
 
     Set<Mission> findMissionsUnderRank(Integer rank);

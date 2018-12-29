@@ -19,7 +19,7 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     public Mission findMissionById(Long id) {
-        return missionRepository.findMissionById(id);
+        return missionRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -31,5 +31,20 @@ public class MissionServiceImpl implements MissionService {
     public Mission create(Mission mission) {
 
         return missionRepository.save(mission);
+    }
+
+    @Transactional
+    public Mission update(Mission mission) {
+        Mission updatedMission = missionRepository.findById(mission.getId()).orElse(null);
+
+        updatedMission.setDescription(mission.getDescription());
+        updatedMission.setDurationCompleted(mission.getDurationCompleted());
+        updatedMission.setForce(mission.getForce());
+        updatedMission.setPercentRewardResources(mission.getPercentRewardResources());
+        updatedMission.setRankMission(mission.getRankMission());
+        updatedMission.setRewardStaffs(mission.getRewardStaffs());
+        updatedMission.setRewardResources(mission.getRewardResources());
+        updatedMission.setMissionInProgresses(mission.getMissionInProgresses());
+        return updatedMission;
     }
 }

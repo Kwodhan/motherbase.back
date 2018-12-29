@@ -3,6 +3,7 @@ package com.motherbase.apirest.model.motherbase;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.motherbase.apirest.model.mission.Mission;
+import com.motherbase.apirest.model.mission.MissionInProgress;
 import com.motherbase.apirest.model.motherbase.department.*;
 import com.motherbase.apirest.model.resource.Resource;
 
@@ -10,22 +11,24 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Entity
 public class MotherBase {
     private Long id;
     private String pseudo;
     private Map<Resource, Integer> resources;
+
     private WaitingRoom waitingRoom;
     private Barrack barrack;
     private RandD randD;
     private Development development;
     private Infirmary infirmary;
-    /**
-     * Mission in progresse
-     * The date of begin mission
-     */
-    private Map<Mission, Date> missionInProgress;
+
+    private Garage garage;
+
+    private Set<MissionInProgress> missionInProgress;
+
     private Integer rankHistory;
 
 
@@ -44,6 +47,9 @@ public class MotherBase {
         this.randD = new RandD();
         this.development = new Development();
         this.infirmary = new Infirmary();
+        this.garage = new Garage();
+
+        this.garage.setMotherBase(this);
         this.randD.setMotherBase(this);
         this.waitingRoom.setMotherBase(this);
         this.barrack.setMotherBase(this);
@@ -90,30 +96,33 @@ public class MotherBase {
     }
 
     public boolean canTakeMission(Mission mission) {
+
         if (this.rankHistory > mission.getRankMission()) {
             return false;
         }
-        return !this.getMissionInProgress().containsKey(mission);
-    }
-
-    public void takeMission(Mission mission) {
-        if (this.rankHistory > mission.getRankMission()) {
-            return;
+        // if the mission is already taken by the user
+        for (MissionInProgress missionInProgress : this.getMissionInProgress()) {
+            if (missionInProgress.getMission().getId().equals(mission.getId())) {
+                return false;
+            }
         }
-        this.missionInProgress.put(mission, new Date());
-
+        return true;
     }
+
 
     public boolean isFinishMission(Mission mission) {
         Date today = new Date();
-        Date finish = new Date(this.getMissionInProgress().get(mission).getTime() + mission.getDurationCompleted().toMillis());
+        MissionInProgress missionInProgress = this.getMissionInProgress().stream().filter(x -> x.getMission().getId().equals(mission.getId())).findFirst().orElse(null);
+        if (missionInProgress == null) {
+            return false;
+        }
+        Date finish = new Date(missionInProgress.getDateBegin().getTime() + mission.getDurationCompleted().toMillis());
 
         return today.after(finish);
     }
 
     public MotherBase finishMission(Mission mission) {
 
-        this.missionInProgress.remove(mission);
         this.receiveRewardMission(mission);
         return this;
 
@@ -189,6 +198,15 @@ public class MotherBase {
         this.infirmary = infirmary;
     }
 
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "motherBase")
+    public Garage getGarage() {
+        return garage;
+    }
+
+    public void setGarage(Garage garage) {
+        this.garage = garage;
+    }
+
     public String getPseudo() {
         return pseudo;
     }
@@ -210,15 +228,13 @@ public class MotherBase {
         this.resources = resources;
     }
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable
-    @MapKeyClass(Mission.class)
     @JsonIgnore
-    public Map<Mission, Date> getMissionInProgress() {
+    @OneToMany(mappedBy = "motherBase")
+    public Set<MissionInProgress> getMissionInProgress() {
         return missionInProgress;
     }
 
-    public void setMissionInProgress(Map<Mission, Date> missionInProgress) {
+    public void setMissionInProgress(Set<MissionInProgress> missionInProgress) {
         this.missionInProgress = missionInProgress;
     }
 
@@ -230,4 +246,6 @@ public class MotherBase {
     public void setRankHistory(Integer rankHistory) {
         this.rankHistory = rankHistory;
     }
+
+
 }
