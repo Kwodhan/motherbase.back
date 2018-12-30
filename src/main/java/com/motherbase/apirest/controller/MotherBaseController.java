@@ -87,15 +87,15 @@ public class MotherBaseController {
         }
     }
 
-    @RequestMapping(value = "/triggerUpgrade/{id}", method = RequestMethod.PATCH, produces = "application/json", consumes = "application/json")
-    ResponseEntity<UpgradeDepartmentResponse> triggerUpgrade(@PathVariable("id") Long id) {
+    @RequestMapping(value = "/beginUpgrade/{id}", method = RequestMethod.PATCH, produces = "application/json", consumes = "application/json")
+    ResponseEntity<UpgradeDepartmentResponse> beginUpgrade(@PathVariable("id") Long id) {
         Department department = departmentService.findWithMotherBaseById(id);
         if (department == null) {
             log.warn("[WARN] Department " + id + " doesn't exist");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        if (motherBaseService.triggerUpgradeDepartment(department.getMotherBase(), department)) {
+        if (motherBaseService.beginUpgradeDepartment(department.getMotherBase(), department)) {
             log.info("[INFO] Department " + department.getId() + " under construction to rank " + RankDepartment.values()[department.getRank().ordinal() + 1]);
             RankDepartment nextRank = RankDepartment.values()[department.getRank().ordinal() + 1];
             return new ResponseEntity<>(new UpgradeDepartmentResponse(nextRank.getDurationUpgrade(), department, department.getMotherBase()), HttpStatus.OK);
@@ -108,15 +108,17 @@ public class MotherBaseController {
 
     }
 
-    @RequestMapping(value = "/upgrade/{id}", method = RequestMethod.PATCH, produces = "application/json", consumes = "application/json")
-    ResponseEntity<Department> upgrade(@PathVariable("id") Long id) {
+    @RequestMapping(value = "/finishUpgrade/{id}", method = RequestMethod.PATCH, produces = "application/json", consumes = "application/json")
+    ResponseEntity<Boolean> finishUpgrade(@PathVariable("id") Long id) {
         Department department = departmentService.findWithMotherBaseById(id);
-        log.info("[INFO] Department " + department.getId() + " finish construction to rank " + RankDepartment.values()[department.getRank().ordinal() + 1]);
-        return new ResponseEntity<>(motherBaseService.upgradeDepartment(department.getMotherBase(), department), HttpStatus.OK);
+        if (department == null) {
+            log.warn("[WARN] Department " + id + " doesn't exist");
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        MotherBase motherBase = department.getMotherBase();
 
+        return new ResponseEntity<>(this.motherBaseService.finishUpgradeDepartment(motherBase, department), HttpStatus.OK);
     }
-
-
 
 
 }

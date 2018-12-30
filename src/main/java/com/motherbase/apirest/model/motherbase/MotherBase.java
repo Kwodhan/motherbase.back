@@ -76,7 +76,7 @@ public class MotherBase {
         return true;
     }
 
-    public void triggerUpgrade(Department department) {
+    public void beginUpgrade(Department department) {
         if (department.getRank().equals(RankDepartment.values()[RankDepartment.values().length - 1])) {
             return;
         }
@@ -87,10 +87,20 @@ public class MotherBase {
         department.setDateBeginUpgrade(new Date());
     }
 
-    public Department upgrade(Department department) {
+    public boolean isFinishUpgrade(Department department) {
+        if (department.getDateBeginUpgrade() == null) {
+            return false;
+        }
+        Date today = new Date();
+        RankDepartment nextRank = RankDepartment.values()[department.getRank().ordinal() + 1];
+        Date finish = new Date(department.getDateBeginUpgrade().getTime() + nextRank.getDurationUpgrade().toMillis());
+
+        return today.after(finish);
+    }
+
+    public void upgrade(Department department) {
         department.upgradeRank();
         department.setDateBeginUpgrade(null);
-        return department;
     }
 
     public boolean canTakeMission(Mission mission) {

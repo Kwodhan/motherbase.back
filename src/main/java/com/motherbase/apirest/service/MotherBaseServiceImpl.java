@@ -1,23 +1,13 @@
 package com.motherbase.apirest.service;
 
-import com.motherbase.apirest.model.mission.Mission;
-import com.motherbase.apirest.model.mission.MissionInProgress;
-import com.motherbase.apirest.model.mission.MissionInProgressID;
-import com.motherbase.apirest.model.mission.StateMission;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.motherbase.department.Department;
-import com.motherbase.apirest.model.staff.Fighter;
 import com.motherbase.apirest.model.staff.Staff;
-import com.motherbase.apirest.repository.MissionInProgressRepository;
 import com.motherbase.apirest.repository.MotherBaseRepository;
-import com.motherbase.apirest.repository.StaffRepository;
-import com.motherbase.apirest.repository.VehicleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -26,14 +16,7 @@ public class MotherBaseServiceImpl implements MotherBaseService {
     @Autowired
     private MotherBaseRepository motherBaseRepository;
 
-    @Autowired
-    private StaffRepository staffRepository;
 
-    @Autowired
-    private VehicleRepository vehicleRepository;
-
-    @Autowired
-    private MissionInProgressRepository missionInProgressRepository;
 
 
     public MotherBaseServiceImpl() {
@@ -71,9 +54,9 @@ public class MotherBaseServiceImpl implements MotherBaseService {
 
     @Override
     @Transactional
-    public boolean triggerUpgradeDepartment(MotherBase motherBase, Department department) {
+    public boolean beginUpgradeDepartment(MotherBase motherBase, Department department) {
         if (motherBase.canUpgrade(department)) {
-            motherBase.triggerUpgrade(department);
+            motherBase.beginUpgrade(department);
             return true;
         }
         return false;
@@ -81,75 +64,15 @@ public class MotherBaseServiceImpl implements MotherBaseService {
 
     @Override
     @Transactional
-    public Department upgradeDepartment(MotherBase motherBase, Department department) {
-
-        return motherBase.upgrade(department);
-    }
-
-    @Override
-    @Transactional
-    public boolean takeMission(MotherBase motherBase, Mission mission, List<Long> fightersId) {
-
-        if (!motherBase.canTakeMission(mission)) {
-            return false;
-
+    public boolean finishUpgradeDepartment(MotherBase motherBase, Department department) {
+        if (motherBase.isFinishUpgrade(department)) {
+            motherBase.upgrade(department);
+            return true;
         }
-
-        // Search Fighters in 3 tables (Staff, Vehicle, Metal gear)
-        List<Fighter> fighters = new ArrayList<>();
-        for (Long id : fightersId) {
-            Fighter fighter = staffRepository.findById(id).orElse(null);
-            if (fighter == null) {
-                fighter = vehicleRepository.findById(id).orElse(null);
-            }
-            if (fighter == null) {
-                // TODO : Metal gear!!
-                //fighter = MetalGearRepository.findById(id).orElse(null);
-            }
-            if (fighter == null) {
-                return false;
-            }
-            if (!fighter.isDown() && !fighter.isInMission()) {
-                fighters.add(fighter);
-            } else {
-                return false;
-            }
-
-        }
-
-        MissionInProgress missionInProgress = new MissionInProgress(mission, new Date(), motherBase, fighters);
-
-        missionInProgress = missionInProgressRepository.save(missionInProgress);
-        for (Fighter fighter : fighters) {
-            fighter.setMissionInProgress(missionInProgress);
-        }
-
-
-        return true;
+        return false;
 
     }
 
 
-    @Override
-    @Transactional
-    public StateMission finishMission(MotherBase motherBase, Mission mission) {
-        if (motherBase.isFinishMission(mission)) {
-            StateMission stateMission;
-            if (motherBase.isSuccessMission(mission)) {
-                motherBase.receiveRewardMission(mission);
-                stateMission = StateMission.Success;
-            } else {
-                stateMission = StateMission.Failed;
-            }
-            MissionInProgress toDelete = missionInProgressRepository.findById(new MissionInProgressID(mission.getId(), motherBase.getId())).orElse(null);
-            for (Fighter fighter : toDelete.getFighters()) {
-                fighter.setMissionInProgress(null);
-            }
-            missionInProgressRepository.delete(toDelete);
-            return stateMission;
-        }
-        return StateMission.NotFinish;
-
-    }
 
 }

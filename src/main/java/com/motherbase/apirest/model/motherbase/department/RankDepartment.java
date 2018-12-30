@@ -12,10 +12,10 @@ import java.util.Map;
  */
 public enum RankDepartment {
     Level0(Duration.ZERO, 0, 0, 0, 0, 0, 0),
-    Level1(Duration.ofHours(1), 20, 30, 20, 20, 20, 20),
-    Level2(Duration.ofHours(4), 30, 30, 20, 20, 20, 20),
-    Level3(Duration.ofHours(12), 40, 30, 20, 20, 20, 20),
-    Level4(Duration.ofHours(24), 50, 30, 20, 20, 20, 20);
+    Level1(Duration.ofMinutes(1), 20, 30, 20, 20, 20, 20),
+    Level2(Duration.ofMinutes(1), 30, 30, 20, 20, 20, 20),
+    Level3(Duration.ofMinutes(1), 40, 30, 20, 20, 20, 20),
+    Level4(Duration.ofMinutes(1), 50, 30, 20, 20, 20, 20);
 
 
     private Duration durationUpgrade;

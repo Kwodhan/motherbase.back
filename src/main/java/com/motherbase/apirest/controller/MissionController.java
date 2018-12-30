@@ -50,7 +50,7 @@ public class MissionController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        if (motherBaseService.takeMission(motherBase, mission, beginMissionRequest.getFighterList())) {
+        if (missionService.takeMission(motherBase, mission, beginMissionRequest.getFighterList())) {
             log.info("[INFO] MotherBase " + motherBase.getId() + " take Mission " + mission.getId());
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
@@ -75,7 +75,7 @@ public class MissionController {
             log.warn("[WARN] MotherBase " + motherBase.getId() + " doesn't have mission " + mission.getId());
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
-        StateMission stateMission = this.motherBaseService.finishMission(motherBase, mission);
+        StateMission stateMission = this.missionService.finishMission(motherBase, mission);
 
         if (stateMission.equals(StateMission.Success)) {
             return new ResponseEntity<>(stateMission, HttpStatus.OK);

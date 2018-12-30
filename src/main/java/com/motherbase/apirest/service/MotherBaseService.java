@@ -1,7 +1,5 @@
 package com.motherbase.apirest.service;
 
-import com.motherbase.apirest.model.mission.Mission;
-import com.motherbase.apirest.model.mission.StateMission;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.motherbase.department.Department;
 import com.motherbase.apirest.model.staff.Staff;
@@ -17,11 +15,23 @@ public interface MotherBaseService {
 
     boolean moveStaff(Staff staff, Department department);
 
-    boolean triggerUpgradeDepartment(MotherBase motherBase, Department department);
+    /**
+     * Begin the upgrade of the department with resources of motherBase
+     *
+     * @param motherBase the motherBase that will use its resources for upgrade
+     * @param department the department that will upgrade
+     * @return has begin upgrade
+     */
+    boolean beginUpgradeDepartment(MotherBase motherBase, Department department);
 
-    Department upgradeDepartment(MotherBase motherBase, Department department);
+    /**
+     * Upgrade the department
+     *
+     * @param motherBase the motherBase that will use its resources for upgrade
+     * @param department the department that will upgrade
+     * @return the upgrade is done
+     */
+    boolean finishUpgradeDepartment(MotherBase motherBase, Department department);
 
-    boolean takeMission(MotherBase motherBase, Mission mission, List<Long> fighters);
 
-    StateMission finishMission(MotherBase motherBase, Mission mission);
 }
