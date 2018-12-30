@@ -36,7 +36,8 @@ public class Garage {
 
     public void removeVehicle(Vehicle vehicle) {
         this.vehicles.remove(vehicle);
-        vehicle.setGarage(this);
+        vehicle.setGarage(null);
+
     }
 
     @OneToOne(fetch = FetchType.LAZY)

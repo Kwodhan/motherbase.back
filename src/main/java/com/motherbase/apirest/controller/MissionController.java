@@ -4,6 +4,7 @@ import com.motherbase.apirest.controller.requestcustom.BeginMissionRequest;
 import com.motherbase.apirest.controller.requestcustom.FinishMissionRequest;
 import com.motherbase.apirest.controller.requestcustom.StateMissionRequest;
 import com.motherbase.apirest.controller.responsecustom.BeginMissionResponse;
+import com.motherbase.apirest.controller.responsecustom.FinishMissionResponse;
 import com.motherbase.apirest.controller.responsecustom.StateMissionResponse;
 import com.motherbase.apirest.model.mission.MessagesMission;
 import com.motherbase.apirest.model.mission.Mission;
@@ -63,7 +64,7 @@ public class MissionController {
     }
 
     @RequestMapping(value = "/finishMission", method = RequestMethod.GET, produces = "application/json", consumes = "application/json")
-    ResponseEntity<StateMission> finishMission(@RequestBody FinishMissionRequest finishMissionRequest) {
+    ResponseEntity<FinishMissionResponse> finishMission(@RequestBody FinishMissionRequest finishMissionRequest) {
         Mission mission = this.missionService.findMissionById(finishMissionRequest.getIdMission());
         MotherBase motherBase = this.motherBaseService.findById(finishMissionRequest.getIdMotherBase());
 
@@ -75,16 +76,16 @@ public class MissionController {
             log.warn("[WARN] MotherBase " + motherBase.getId() + " doesn't have mission " + mission.getId());
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
-        StateMission stateMission = this.missionService.finishMission(motherBase, mission);
-
+        FinishMissionResponse finishMissionResponse = this.missionService.finishMission(motherBase, mission);
+        StateMission stateMission = finishMissionResponse.getStateMission();
         if (stateMission.equals(StateMission.Success)) {
-            return new ResponseEntity<>(stateMission, HttpStatus.OK);
+            return new ResponseEntity<>(finishMissionResponse, HttpStatus.OK);
         } else if (stateMission.equals(StateMission.Failed)) {
-            return new ResponseEntity<>(stateMission, HttpStatus.OK);
+            return new ResponseEntity<>(finishMissionResponse, HttpStatus.OK);
         } else if (stateMission.equals(StateMission.NotFinish)) {
-            return new ResponseEntity<>(stateMission, HttpStatus.CONFLICT);
+            return new ResponseEntity<>(finishMissionResponse, HttpStatus.CONFLICT);
         }
-        return new ResponseEntity<>(stateMission, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(finishMissionResponse, HttpStatus.CONFLICT);
     }
 
     @RequestMapping(value = "/stateMission", method = RequestMethod.GET, produces = "application/json", consumes = "application/json")
@@ -101,7 +102,7 @@ public class MissionController {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
         MissionInProgress missionInProgress = motherBase.getMissionInProgress(mission);
-        return new ResponseEntity<>(new StateMissionResponse(mission, missionInProgress.getDateBegin(), motherBase.getPercentageSuccess(mission)), HttpStatus.OK);
+        return new ResponseEntity<>(new StateMissionResponse(mission, missionInProgress.getDateBegin(), motherBase.getPercentageSuccess(mission), missionInProgress.getFighters()), HttpStatus.OK);
 
     }
 
@@ -116,7 +117,7 @@ public class MissionController {
 
         for (MissionInProgress missionInProgress : missionInProgressSet) {
             stateMissionResponses.add(
-                    new StateMissionResponse(missionInProgress.getMission(), missionInProgress.getDateBegin(), motherBase.getPercentageSuccess(missionInProgress.getMission()))
+                    new StateMissionResponse(missionInProgress.getMission(), missionInProgress.getDateBegin(), motherBase.getPercentageSuccess(missionInProgress.getMission()), missionInProgress.getFighters())
             );
         }
         if (stateMissionResponses.size() == 0) {

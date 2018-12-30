@@ -1,7 +1,7 @@
 package com.motherbase.apirest.service;
 
+import com.motherbase.apirest.controller.responsecustom.FinishMissionResponse;
 import com.motherbase.apirest.model.mission.Mission;
-import com.motherbase.apirest.model.mission.StateMission;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 
 import java.util.List;
@@ -19,5 +19,5 @@ public interface MissionService {
 
     boolean takeMission(MotherBase motherBase, Mission mission, List<Long> fighters);
 
-    StateMission finishMission(MotherBase motherBase, Mission mission);
+    FinishMissionResponse finishMission(MotherBase motherBase, Mission mission);
 }

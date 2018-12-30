@@ -1,4 +1,4 @@
-package com.motherbase.apirest.model.mission.strategy;
+package com.motherbase.apirest.model.mission.strategyReward;
 
 import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.motherbase.MotherBase;

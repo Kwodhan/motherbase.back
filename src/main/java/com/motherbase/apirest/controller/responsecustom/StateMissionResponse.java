@@ -1,18 +1,23 @@
 package com.motherbase.apirest.controller.responsecustom;
 
 import com.motherbase.apirest.model.mission.Mission;
+import com.motherbase.apirest.model.staff.Fighter;
 
 import java.util.Date;
+import java.util.List;
 
 public class StateMissionResponse extends CustomerResponse {
     private Mission mission;
     private Date DateBegin;
     private Double percentageSuccess;
+    private List<Fighter> fighterList;
 
-    public StateMissionResponse(Mission mission, Date dateBegin, Double percentageSuccess) {
+
+    public StateMissionResponse(Mission mission, Date dateBegin, Double percentageSuccess, List<Fighter> fighterList) {
         this.mission = mission;
-        DateBegin = dateBegin;
+        this.DateBegin = dateBegin;
         this.percentageSuccess = percentageSuccess;
+        this.fighterList = fighterList;
     }
 
     public Mission getMission() {
@@ -37,5 +42,13 @@ public class StateMissionResponse extends CustomerResponse {
 
     public void setPercentageSuccess(Double percentageSuccess) {
         this.percentageSuccess = percentageSuccess;
+    }
+
+    public List<Fighter> getFighterList() {
+        return fighterList;
+    }
+
+    public void setFighterList(List<Fighter> fighterList) {
+        this.fighterList = fighterList;
     }
 }

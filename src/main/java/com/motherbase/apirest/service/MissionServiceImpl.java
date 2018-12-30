@@ -1,11 +1,16 @@
 package com.motherbase.apirest.service;
 
+import com.motherbase.apirest.controller.responsecustom.FinishMissionResponse;
 import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.mission.MissionInProgress;
 import com.motherbase.apirest.model.mission.MissionInProgressID;
 import com.motherbase.apirest.model.mission.StateMission;
+import com.motherbase.apirest.model.mission.strategyAffectStaff.NormalStrategyAffectStaff;
+import com.motherbase.apirest.model.mission.strategyAffectStaff.StrategyAffectStaff;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.staff.Fighter;
+import com.motherbase.apirest.model.staff.Staff;
+import com.motherbase.apirest.model.staff.vehicule.Vehicle;
 import com.motherbase.apirest.repository.MissionInProgressRepository;
 import com.motherbase.apirest.repository.MissionRepository;
 import com.motherbase.apirest.repository.StaffRepository;
@@ -91,7 +96,7 @@ public class MissionServiceImpl implements MissionService {
             if (fighter == null) {
                 return false;
             }
-            if (!fighter.isDown() && !fighter.isInMission()) {
+            if (fighter.canGoToMission() && !fighter.isInMission()) {
                 fighters.add(fighter);
             } else {
                 return false;
@@ -114,7 +119,7 @@ public class MissionServiceImpl implements MissionService {
 
     @Override
     @Transactional
-    public StateMission finishMission(MotherBase motherBase, Mission mission) {
+    public FinishMissionResponse finishMission(MotherBase motherBase, Mission mission) {
         if (motherBase.isFinishMission(mission)) {
             StateMission stateMission;
             if (motherBase.isSuccessMission(mission)) {
@@ -124,13 +129,36 @@ public class MissionServiceImpl implements MissionService {
                 stateMission = StateMission.Failed;
             }
             MissionInProgress toDelete = missionInProgressRepository.findById(new MissionInProgressID(mission.getId(), motherBase.getId())).orElse(null);
+
+            // Injured Staff and Destroy Vehicle
+            StrategyAffectStaff strategyAffectStaff = new NormalStrategyAffectStaff();
+            List<Fighter> fighters = strategyAffectStaff.executeAffect(toDelete, (stateMission.equals(StateMission.Success)));
+
+            List<Fighter> copy = new ArrayList<>(fighters);
+
             for (Fighter fighter : toDelete.getFighters()) {
                 fighter.setMissionInProgress(null);
+                if (fighter.isDead()) {
+                    // TODO : It's ugly !!
+                    fighter.dead();
+                    Staff deadStaff = staffRepository.findById(fighter.getId()).orElse(null);
+                    if (deadStaff != null) {
+                        this.staffRepository.delete(deadStaff);
+                    } else {
+                        Vehicle deadVehicle = vehicleRepository.findById(fighter.getId()).orElse(null);
+                        this.vehicleRepository.delete(deadVehicle);
+                    }
+
+
+                }
             }
+
             missionInProgressRepository.delete(toDelete);
-            return stateMission;
+
+
+            return new FinishMissionResponse(copy, stateMission);
         }
-        return StateMission.NotFinish;
+        return new FinishMissionResponse(null, StateMission.NotFinish);
 
     }
 }

@@ -32,6 +32,10 @@ public class Mission {
 
     private Integer maxPercentageSuccess;
 
+    private Integer chanceDying;
+
+    private Integer chanceInjuring;
+
     private Set<MissionInProgress> missionInProgresses;
 
 
@@ -49,6 +53,8 @@ public class Mission {
         this.durationCompleted = durationCompleted;
         this.percentRewardResources = percentRewardResources;
         this.maxPercentageSuccess = 100;
+        this.chanceDying = 5;
+        this.chanceInjuring = 10;
         for (RewardStaff rewardStaff : rewardStaffs) {
             rewardStaff.setMission(this);
         }
@@ -75,6 +81,8 @@ public class Mission {
         this.durationCompleted = durationCompleted;
         this.percentRewardResources = percentRewardResources;
         this.maxPercentageSuccess = 100;
+        this.chanceDying = 5;
+        this.chanceInjuring = 10;
         for (RewardStaff rewardStaff : rewardStaffs) {
             rewardStaff.setMission(this);
         }
@@ -102,6 +110,8 @@ public class Mission {
         this.durationCompleted = durationCompleted;
         this.rewardVehicles = rewardVehicles;
         this.maxPercentageSuccess = 100;
+        this.chanceDying = 5;
+        this.chanceInjuring = 10;
         for (RewardVehicle rewardVehicle : rewardVehicles) {
             rewardVehicle.setMission(this);
         }
@@ -212,5 +222,23 @@ public class Mission {
 
     public void setMaxPercentageSuccess(Integer maxPercentageSuccess) {
         this.maxPercentageSuccess = maxPercentageSuccess;
+    }
+
+    @JsonIgnore
+    public Integer getChanceDying() {
+        return chanceDying;
+    }
+
+    public void setChanceDying(Integer chanceDying) {
+        this.chanceDying = chanceDying;
+    }
+
+    @JsonIgnore
+    public Integer getChanceInjuring() {
+        return chanceInjuring;
+    }
+
+    public void setChanceInjuring(Integer chanceInjuring) {
+        this.chanceInjuring = chanceInjuring;
     }
 }

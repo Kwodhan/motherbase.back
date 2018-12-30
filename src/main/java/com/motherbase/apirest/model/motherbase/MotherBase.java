@@ -4,10 +4,12 @@ package com.motherbase.apirest.model.motherbase;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.mission.MissionInProgress;
-import com.motherbase.apirest.model.mission.strategy.NormalStrategyReward;
+import com.motherbase.apirest.model.mission.strategyReward.NormalStrategyReward;
 import com.motherbase.apirest.model.motherbase.department.*;
 import com.motherbase.apirest.model.resource.Resource;
 import com.motherbase.apirest.model.staff.Fighter;
+import com.motherbase.apirest.model.staff.Staff;
+import com.motherbase.apirest.model.staff.vehicule.Vehicle;
 
 import javax.persistence.*;
 import java.util.*;
@@ -145,9 +147,11 @@ public class MotherBase {
         for (Fighter fighter : missionInProgress.getFighters()) {
             force += fighter.getForce();
         }
-        if (force < mission.getForce()) {
+        if (force <= mission.getForce()) {
             double rapport = (double) force / (double) mission.getForce();
             percentageSuccess = rapport * 100;
+        } else {
+            percentageSuccess = mission.getMaxPercentageSuccess();
         }
 
         if (percentageSuccess > mission.getMaxPercentageSuccess()) {
@@ -164,6 +168,14 @@ public class MotherBase {
      */
     public MissionInProgress getMissionInProgress(Mission mission) {
         return this.getMissionInProgress().stream().filter(x -> x.getMission().getId().equals(mission.getId())).findFirst().orElse(null);
+    }
+
+    public void removeFighter(Staff staff) {
+        staff.getDepartment().removeStaff(staff);
+    }
+
+    public void removeFighter(Vehicle vehicle) {
+        vehicle.getGarage().removeVehicle(vehicle);
     }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

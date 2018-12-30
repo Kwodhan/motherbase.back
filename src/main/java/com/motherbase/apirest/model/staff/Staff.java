@@ -1,18 +1,20 @@
 package com.motherbase.apirest.model.staff;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.motherbase.department.Department;
 
 import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 @Entity
 public class Staff extends Fighter {
     private Department department;
     private String name;
     private Map<Skill, RankStaff> skillSet;
-
+    private Boolean down;
 
 
     public Staff() {
@@ -30,6 +32,7 @@ public class Staff extends Fighter {
             this.skillSet.put(skill, rankSkills[indexRank++]);
         }
         this.department = department;
+        this.down = false;
     }
 
     public Staff(String name, Department department, Map<Skill, RankStaff> skillSet) {
@@ -40,6 +43,7 @@ public class Staff extends Fighter {
         this.name = name;
         this.skillSet = skillSet;
         this.department = department;
+        this.down = false;
     }
 
     public void upgradeSkill(Skill skill) {
@@ -62,8 +66,6 @@ public class Staff extends Fighter {
     public void setName(String name) {
         this.name = name;
     }
-
-
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -97,6 +99,49 @@ public class Staff extends Fighter {
         return this.skillSet.get(Skill.Combat).getPoint();
     }
 
+    @Override
+    @JsonIgnore
+    @Transient
+    public boolean canGoToMission() {
+        return !this.isDown();
+    }
+
+    @Override
+    public void takeDamage(boolean successMission, Mission mission, double multiplierDyingFailedMission, double multiplierInjuringFailedMission) {
+
+        Random rand = new Random();
+        int randomInteger = rand.nextInt(101);
+        if (successMission) {
+            if (randomInteger <= mission.getChanceDying()) {
+                this.setDead(true);
+            } else if (randomInteger <= mission.getChanceInjuring()) {
+                this.down = true;
+
+            }
+        } else {
+            if (randomInteger <= (mission.getChanceDying() * multiplierDyingFailedMission)) {
+                this.setDead(true);
+            } else if (randomInteger <= (mission.getChanceInjuring() * multiplierInjuringFailedMission)) {
+                this.down = true;
+
+            }
+        }
+
+
+    }
+
+    @Override
+    public void dead() {
+        this.getDepartment().removeStaff(this);
+    }
+
+    public void setDown(Boolean down) {
+        this.down = down;
+    }
+
+    public Boolean isDown() {
+        return down;
+    }
 
 
 }

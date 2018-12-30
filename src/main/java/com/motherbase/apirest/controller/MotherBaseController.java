@@ -116,8 +116,12 @@ public class MotherBaseController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         MotherBase motherBase = department.getMotherBase();
+        if (this.motherBaseService.finishUpgradeDepartment(motherBase, department)) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
 
-        return new ResponseEntity<>(this.motherBaseService.finishUpgradeDepartment(motherBase, department), HttpStatus.OK);
     }
 
 
