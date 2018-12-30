@@ -13,7 +13,7 @@ public interface MissionRepository extends JpaRepository<Mission, Long> {
 
 
     @Query("select a from Mission a where a.rankMission <= :rank order by a.rankMission asc ")
-    Set<Mission> findMissionsUnderRank(@Param("rank") Integer rank);
+    Set<Mission> findMissionsUnderEqualsRank(@Param("rank") Integer rank);
 
 
 }

@@ -15,6 +15,7 @@ public class Mission {
 
     private Map<Resource, Integer> rewardResources;
     private Set<RewardStaff> rewardStaffs;
+    private Set<RewardVehicle> rewardVehicles;
     /**
      * reward resource not sure
      */
@@ -29,13 +30,16 @@ public class Mission {
 
     private Duration durationCompleted;
 
+    private Integer maxPercentageSuccess;
+
     private Set<MissionInProgress> missionInProgresses;
 
 
     public Mission() {
     }
 
-    public Mission(Integer force, String description, Integer rankMission, Duration durationCompleted, Set<RewardStaff> rewardStaffs, Set<RewardResource> percentRewardResources, Integer... rewards) {
+    public Mission(Integer force, String description, Integer rankMission, Duration durationCompleted,
+                   Set<RewardStaff> rewardStaffs, Set<RewardResource> percentRewardResources, Integer... rewards) {
         if (rewards.length != Resource.values().length) {
             throw new IllegalArgumentException("There are not the same number between rewards arguments and number of resources in Resource enum ");
         }
@@ -44,6 +48,7 @@ public class Mission {
         this.rankMission = rankMission;
         this.durationCompleted = durationCompleted;
         this.percentRewardResources = percentRewardResources;
+        this.maxPercentageSuccess = 100;
         for (RewardStaff rewardStaff : rewardStaffs) {
             rewardStaff.setMission(this);
         }
@@ -51,6 +56,55 @@ public class Mission {
             rewardResource.setMission(this);
         }
         this.rewardStaffs = rewardStaffs;
+        this.rewardResources = new HashMap<>();
+        int indexResource = 0;
+        for (Resource resource : Resource.values()) {
+            this.rewardResources.put(resource, rewards[indexResource++]);
+        }
+    }
+
+
+    public Mission(Integer force, String description, Integer rankMission, Duration durationCompleted,
+                   Set<RewardStaff> rewardStaffs, Set<RewardResource> percentRewardResources, Set<RewardVehicle> rewardVehicles, Integer... rewards) {
+        if (rewards.length != Resource.values().length) {
+            throw new IllegalArgumentException("There are not the same number between rewards arguments and number of resources in Resource enum ");
+        }
+        this.force = force;
+        this.description = description;
+        this.rankMission = rankMission;
+        this.durationCompleted = durationCompleted;
+        this.percentRewardResources = percentRewardResources;
+        this.maxPercentageSuccess = 100;
+        for (RewardStaff rewardStaff : rewardStaffs) {
+            rewardStaff.setMission(this);
+        }
+        for (RewardVehicle rewardVehicle : rewardVehicles) {
+            rewardVehicle.setMission(this);
+        }
+        for (RewardResource rewardResource : percentRewardResources) {
+            rewardResource.setMission(this);
+        }
+        this.rewardStaffs = rewardStaffs;
+        this.rewardResources = new HashMap<>();
+        int indexResource = 0;
+        for (Resource resource : Resource.values()) {
+            this.rewardResources.put(resource, rewards[indexResource++]);
+        }
+    }
+
+    public Mission(Integer force, String description, Integer rankMission, Duration durationCompleted, Set<RewardVehicle> rewardVehicles, Integer... rewards) {
+        if (rewards.length != Resource.values().length) {
+            throw new IllegalArgumentException("There are not the same number between rewards arguments and number of resources in Resource enum ");
+        }
+        this.force = force;
+        this.description = description;
+        this.rankMission = rankMission;
+        this.durationCompleted = durationCompleted;
+        this.rewardVehicles = rewardVehicles;
+        this.maxPercentageSuccess = 100;
+        for (RewardVehicle rewardVehicle : rewardVehicles) {
+            rewardVehicle.setMission(this);
+        }
         this.rewardResources = new HashMap<>();
         int indexResource = 0;
         for (Resource resource : Resource.values()) {
@@ -88,6 +142,15 @@ public class Mission {
         this.rewardStaffs = rewardStaffs;
     }
 
+    @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    public Set<RewardVehicle> getRewardVehicles() {
+        return rewardVehicles;
+    }
+
+    public void setRewardVehicles(Set<RewardVehicle> rewardVehicles) {
+        this.rewardVehicles = rewardVehicles;
+    }
+
     public Integer getForce() {
         return force;
     }
@@ -107,6 +170,7 @@ public class Mission {
         this.id = id;
     }
 
+    @JsonIgnore
     public Integer getRankMission() {
         return rankMission;
     }
@@ -139,5 +203,14 @@ public class Mission {
 
     public void setMissionInProgresses(Set<MissionInProgress> missionInProgresses) {
         this.missionInProgresses = missionInProgresses;
+    }
+
+    @JsonIgnore
+    public Integer getMaxPercentageSuccess() {
+        return maxPercentageSuccess;
+    }
+
+    public void setMaxPercentageSuccess(Integer maxPercentageSuccess) {
+        this.maxPercentageSuccess = maxPercentageSuccess;
     }
 }

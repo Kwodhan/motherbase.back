@@ -12,5 +12,5 @@ public interface MissionService {
 
     Mission findMissionById(Long id);
 
-    Set<Mission> findMissionsUnderRank(Integer rank);
+    Set<Mission> findMissionsUnderEqualsRank(Integer rank);
 }

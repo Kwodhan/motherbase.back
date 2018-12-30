@@ -4,14 +4,13 @@ package com.motherbase.apirest.model.motherbase;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.mission.MissionInProgress;
+import com.motherbase.apirest.model.mission.strategy.NormalStrategyReward;
 import com.motherbase.apirest.model.motherbase.department.*;
 import com.motherbase.apirest.model.resource.Resource;
+import com.motherbase.apirest.model.staff.Fighter;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 public class MotherBase {
@@ -56,13 +55,12 @@ public class MotherBase {
         this.development.setMotherBase(this);
         this.infirmary.setMotherBase(this);
 
+
     }
 
-    private void receiveRewardMission(Mission mission) {
-        for (Map.Entry<Resource, Integer> reward : mission.getRewardResources().entrySet()) {
-            this.addResource(reward.getKey(), reward.getValue());
+    public void receiveRewardMission(Mission mission) {
+        new NormalStrategyReward().executeReward(this, mission);
 
-        }
     }
     @Transient
     public boolean canUpgrade(Department department) {
@@ -112,7 +110,7 @@ public class MotherBase {
 
     public boolean isFinishMission(Mission mission) {
         Date today = new Date();
-        MissionInProgress missionInProgress = this.getMissionInProgress().stream().filter(x -> x.getMission().getId().equals(mission.getId())).findFirst().orElse(null);
+        MissionInProgress missionInProgress = this.getMissionInProgress(mission);
         if (missionInProgress == null) {
             return false;
         }
@@ -121,11 +119,41 @@ public class MotherBase {
         return today.after(finish);
     }
 
-    public MotherBase finishMission(Mission mission) {
+    public boolean isSuccessMission(Mission mission) {
+        Random rand = new Random();
+        int randomInteger = rand.nextInt(101);
+        return randomInteger <= getPercentageSuccess(mission);
 
-        this.receiveRewardMission(mission);
-        return this;
 
+    }
+
+    public double getPercentageSuccess(Mission mission) {
+        MissionInProgress missionInProgress = this.getMissionInProgress(mission);
+
+        int force = 0;
+        double percentageSuccess = 0;
+        for (Fighter fighter : missionInProgress.getFighters()) {
+            force += fighter.getForce();
+        }
+        if (force < mission.getForce()) {
+            double rapport = (double) force / (double) mission.getForce();
+            percentageSuccess = rapport * 100;
+        }
+
+        if (percentageSuccess > mission.getMaxPercentageSuccess()) {
+            percentageSuccess = mission.getMaxPercentageSuccess();
+        }
+
+        return percentageSuccess;
+    }
+
+
+    /**
+     * @param mission the mission
+     * @return can be null if the motherBase doesn't have the mission
+     */
+    public MissionInProgress getMissionInProgress(Mission mission) {
+        return this.getMissionInProgress().stream().filter(x -> x.getMission().getId().equals(mission.getId())).findFirst().orElse(null);
     }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -246,6 +274,5 @@ public class MotherBase {
     public void setRankHistory(Integer rankHistory) {
         this.rankHistory = rankHistory;
     }
-
 
 }

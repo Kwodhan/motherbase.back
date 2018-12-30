@@ -32,6 +32,16 @@ public class Staff extends Fighter {
         this.department = department;
     }
 
+    public Staff(String name, Department department, Map<Skill, RankStaff> skillSet) {
+        super();
+        if (skillSet.size() != Skill.values().length) {
+            throw new IllegalArgumentException("There are not the same number between rankSkill arguments and number of skills in Skill enum ");
+        }
+        this.name = name;
+        this.skillSet = skillSet;
+        this.department = department;
+    }
+
     public void upgradeSkill(Skill skill) {
         if (this.skillSet.get(skill) != RankStaff.values()[RankStaff.values().length - 1]) {
             this.skillSet.replace(skill, RankStaff.values()[this.skillSet.get(skill).ordinal() + 1]);

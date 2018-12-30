@@ -3,6 +3,7 @@ package com.motherbase.apirest.service;
 import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.mission.MissionInProgress;
 import com.motherbase.apirest.model.mission.MissionInProgressID;
+import com.motherbase.apirest.model.mission.StateMission;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.motherbase.department.Department;
 import com.motherbase.apirest.model.staff.Fighter;
@@ -131,17 +132,23 @@ public class MotherBaseServiceImpl implements MotherBaseService {
 
     @Override
     @Transactional
-    public boolean finishMission(MotherBase motherBase, Mission mission) {
+    public StateMission finishMission(MotherBase motherBase, Mission mission) {
         if (motherBase.isFinishMission(mission)) {
-            motherBase.finishMission(mission);
+            StateMission stateMission;
+            if (motherBase.isSuccessMission(mission)) {
+                motherBase.receiveRewardMission(mission);
+                stateMission = StateMission.Success;
+            } else {
+                stateMission = StateMission.Failed;
+            }
             MissionInProgress toDelete = missionInProgressRepository.findById(new MissionInProgressID(mission.getId(), motherBase.getId())).orElse(null);
             for (Fighter fighter : toDelete.getFighters()) {
                 fighter.setMissionInProgress(null);
             }
             missionInProgressRepository.delete(toDelete);
-            return true;
+            return stateMission;
         }
-        return false;
+        return StateMission.NotFinish;
 
     }
 

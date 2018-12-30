@@ -1,6 +1,7 @@
 package com.motherbase.apirest.service;
 
 import com.motherbase.apirest.model.mission.Mission;
+import com.motherbase.apirest.model.mission.StateMission;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.motherbase.department.Department;
 import com.motherbase.apirest.model.staff.Staff;
@@ -22,5 +23,5 @@ public interface MotherBaseService {
 
     boolean takeMission(MotherBase motherBase, Mission mission, List<Long> fighters);
 
-    boolean finishMission(MotherBase motherBase, Mission mission);
+    StateMission finishMission(MotherBase motherBase, Mission mission);
 }

@@ -23,8 +23,8 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public Set<Mission> findMissionsUnderRank(Integer rank) {
-        return missionRepository.findMissionsUnderRank(rank);
+    public Set<Mission> findMissionsUnderEqualsRank(Integer rank) {
+        return missionRepository.findMissionsUnderEqualsRank(rank);
     }
 
     @Transactional

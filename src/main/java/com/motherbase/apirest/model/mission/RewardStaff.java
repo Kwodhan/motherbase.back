@@ -6,28 +6,29 @@ import com.motherbase.apirest.model.staff.Skill;
 
 import javax.persistence.*;
 
+
 @Entity
 @Table(name = "MISSION_REWARD_STAFF")
 public class RewardStaff {
 
-    Long id;
-    Skill skill;
+    private Long id;
+    private Skill skill;
 
-    RankStaff rankMax;
+    private RankStaff rankMax;
     /**
      * number of staff
      */
-    Integer numberStuff;
+    private Integer numberStuff;
     /**
      * percent that the stuff have rankMax
      */
-    Integer percent;
+    private Integer percent;
     /**
      * number of staff that it is sure that is rankMax
      */
-    Integer numberFixRankMax;
+    private Integer numberFixRankMax;
 
-    Mission mission;
+    private Mission mission;
 
     public RewardStaff(Skill skill, RankStaff rankMax, Integer numberStuff, Integer percent, Integer numberFixRankMax) {
         if (percent > 100 || percent < 0) {

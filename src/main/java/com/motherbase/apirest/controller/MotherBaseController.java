@@ -1,14 +1,9 @@
 package com.motherbase.apirest.controller;
 
-import com.motherbase.apirest.controller.requestcustom.BeginMissionRequest;
 import com.motherbase.apirest.controller.requestcustom.CreateMotherBaseRequest;
-import com.motherbase.apirest.controller.requestcustom.FinishMissionRequest;
 import com.motherbase.apirest.controller.requestcustom.MoveStaffBaseRequest;
-import com.motherbase.apirest.controller.responsecustom.BeginMissionResponse;
 import com.motherbase.apirest.controller.responsecustom.MoveStaffResponse;
 import com.motherbase.apirest.controller.responsecustom.UpgradeDepartmentResponse;
-import com.motherbase.apirest.model.mission.MessagesMission;
-import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.motherbase.MessagesMotherBase;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.motherbase.department.Department;
@@ -29,9 +24,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/motherbase")
-public class MotherBaseRestController {
+public class MotherBaseController {
 
-    static Logger log = Logger.getLogger(MotherBaseRestController.class.getName());
+    private static Logger log = Logger.getLogger(MotherBaseController.class.getName());
     @Autowired
     MotherBaseService motherBaseService;
 
@@ -121,59 +116,7 @@ public class MotherBaseRestController {
 
     }
 
-    // TODO : move to mission controller
-    @RequestMapping(value = "/beginMission", method = RequestMethod.PATCH, produces = "application/json", consumes = "application/json")
-    ResponseEntity<BeginMissionResponse> beginMission(@RequestBody BeginMissionRequest beginMissionRequest) {
-        Mission mission = this.missionService.findMissionById(beginMissionRequest.getIdMission());
-        if (mission == null) {
-            log.warn("[WARN] Mission " + beginMissionRequest.getIdMission() + " doesn't exist");
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        MotherBase motherBase = this.motherBaseService.findById(beginMissionRequest.getIdMotherBase());
-        if (motherBase == null) {
-            log.warn("[WARN] MotherBase " + beginMissionRequest.getIdMotherBase() + " doesn't exist");
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
 
-        if (motherBaseService.takeMission(motherBase, mission, beginMissionRequest.getFighterList())) {
-            log.info("[INFO] MotherBase " + motherBase.getId() + " take Mission " + mission.getId());
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            log.warn("[WARN] MotherBase " + motherBase.getId() + " can not take Mission " + mission.getId());
-            BeginMissionResponse res = new BeginMissionResponse();
-            res.setMsgError(MessagesMission.CAN_NOT_TAKE_MISSION.getMsg());
-            return new ResponseEntity<>(res, HttpStatus.CONFLICT);
-        }
-
-    }
-
-    // TODO : move to mission controller
-    @RequestMapping(value = "/finishMission", method = RequestMethod.GET, produces = "application/json", consumes = "application/json")
-    ResponseEntity<MotherBase> finishMission(@RequestBody FinishMissionRequest finishMissionRequest) {
-        Mission mission = this.missionService.findMissionById(finishMissionRequest.getIdMission());
-        if (mission == null) {
-            log.warn("[WARN] Mission " + finishMissionRequest.getIdMission() + " doesn't exist");
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        MotherBase motherBase = this.motherBaseService.findById(finishMissionRequest.getIdMotherBase());
-        if (motherBase == null) {
-            log.warn("[WARN] MotherBase " + finishMissionRequest.getIdMotherBase() + " doesn't exist");
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        boolean haveMission = motherBase.getMissionInProgress().stream().filter(x -> x.getMission().getId().equals(mission.getId())).findFirst().isPresent();
-        if (!haveMission) {
-            log.warn("[WARN] MotherBase " + motherBase.getId() + " doesn't have mission " + mission.getId());
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-
-        if (this.motherBaseService.finishMission(motherBase, mission)) {
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-
-
-    }
 
 
 }
