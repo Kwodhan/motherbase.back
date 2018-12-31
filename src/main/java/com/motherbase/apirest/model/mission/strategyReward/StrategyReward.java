@@ -1,9 +1,11 @@
 package com.motherbase.apirest.model.mission.strategyReward;
 
 import com.motherbase.apirest.model.mission.Mission;
-import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.resource.Resource;
+import com.motherbase.apirest.model.staff.Staff;
+import com.motherbase.apirest.model.staff.vehicule.Vehicle;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -11,19 +13,26 @@ import java.util.Map;
  */
 public interface StrategyReward {
 
-    default void executeReward(MotherBase motherBase, Mission mission) {
-        for (Map.Entry<Resource, Integer> reward : mission.getRewardResources().entrySet()) {
-            motherBase.addResource(reward.getKey(), reward.getValue());
-
-        }
-        this.executeRewardResource(motherBase, mission);
-        this.executeRewardStuff(motherBase, mission);
-        this.executeRewardVehicle(motherBase, mission);
+    default RewardMission getReward(Mission mission) {
+        return new RewardMission(executeRewardResource(mission), executeRewardResourcePercentage(mission), executeRewardStuff(mission), executeRewardVehicle(mission));
     }
 
-    void executeRewardResource(MotherBase motherBase, Mission mission);
 
-    void executeRewardStuff(MotherBase motherBase, Mission mission);
+    /**
+     * 100% sure of rewards resource
+     *
+     * @return resource with integer
+     */
+    Map<Resource, Integer> executeRewardResource(Mission mission);
 
-    void executeRewardVehicle(MotherBase motherBase, Mission mission);
+    /**
+     * not sure of rewards resource
+     *
+     * @return resource with integer
+     */
+    Map<Resource, Integer> executeRewardResourcePercentage(Mission mission);
+
+    List<Staff> executeRewardStuff(Mission mission);
+
+    List<Vehicle> executeRewardVehicle(Mission mission);
 }

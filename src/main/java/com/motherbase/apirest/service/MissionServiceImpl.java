@@ -1,12 +1,16 @@
 package com.motherbase.apirest.service;
 
+import com.motherbase.apirest.config.ParameterManager;
 import com.motherbase.apirest.controller.responsecustom.FinishMissionResponse;
 import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.mission.MissionInProgress;
 import com.motherbase.apirest.model.mission.MissionInProgressID;
 import com.motherbase.apirest.model.mission.StateMission;
-import com.motherbase.apirest.model.mission.strategyAffectStaff.NormalStrategyAffectStaff;
 import com.motherbase.apirest.model.mission.strategyAffectStaff.StrategyAffectStaff;
+import com.motherbase.apirest.model.mission.strategyAffectStaff.StrategyAffectStaffEnum;
+import com.motherbase.apirest.model.mission.strategyReward.RewardMission;
+import com.motherbase.apirest.model.mission.strategyReward.StrategyReward;
+import com.motherbase.apirest.model.mission.strategyReward.StrategyRewardEnum;
 import com.motherbase.apirest.model.motherbase.MotherBase;
 import com.motherbase.apirest.model.staff.Fighter;
 import com.motherbase.apirest.model.staff.Staff;
@@ -111,7 +115,6 @@ public class MissionServiceImpl implements MissionService {
             fighter.setMissionInProgress(missionInProgress);
         }
 
-
         return true;
 
     }
@@ -120,18 +123,26 @@ public class MissionServiceImpl implements MissionService {
     @Override
     @Transactional
     public FinishMissionResponse finishMission(MotherBase motherBase, Mission mission) {
+
+        RewardMission rewardMission = null;
         if (motherBase.isFinishMission(mission)) {
+            StrategyAffectStaff strategyAffectStaff = StrategyAffectStaffEnum.valueOf(ParameterManager.getValue("strategyAffectStaff").toString()).getStrategyAffectStaff();
+            StrategyReward strategyReward = StrategyRewardEnum.valueOf(ParameterManager.getValue("strategyReward").toString()).getStrategyReward();
+
             StateMission stateMission;
+
             if (motherBase.isSuccessMission(mission)) {
-                motherBase.receiveRewardMission(mission);
+                rewardMission = strategyReward.getReward(mission);
+                motherBase.receiveRewardMission(rewardMission);
                 stateMission = StateMission.Success;
+
             } else {
                 stateMission = StateMission.Failed;
             }
             MissionInProgress toDelete = missionInProgressRepository.findById(new MissionInProgressID(mission.getId(), motherBase.getId())).orElse(null);
 
             // Injured Staff and Destroy Vehicle
-            StrategyAffectStaff strategyAffectStaff = new NormalStrategyAffectStaff();
+
             List<Fighter> fighters = strategyAffectStaff.executeAffect(toDelete, (stateMission.equals(StateMission.Success)));
 
             List<Fighter> copy = new ArrayList<>(fighters);
@@ -148,17 +159,15 @@ public class MissionServiceImpl implements MissionService {
                         Vehicle deadVehicle = vehicleRepository.findById(fighter.getId()).orElse(null);
                         this.vehicleRepository.delete(deadVehicle);
                     }
-
-
                 }
             }
 
             missionInProgressRepository.delete(toDelete);
 
 
-            return new FinishMissionResponse(copy, stateMission);
+            return new FinishMissionResponse(copy, stateMission, rewardMission);
         }
-        return new FinishMissionResponse(null, StateMission.NotFinish);
+        return new FinishMissionResponse(null, StateMission.NotFinish, rewardMission);
 
     }
 }

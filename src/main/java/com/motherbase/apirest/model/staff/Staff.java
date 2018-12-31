@@ -14,10 +14,20 @@ public class Staff extends Fighter {
     private Department department;
     private String name;
     private Map<Skill, RankStaff> skillSet;
-    private Boolean down;
+    private Boolean isInjured;
 
 
     public Staff() {
+    }
+
+    public Staff(String name, Map<Skill, RankStaff> skillSet) {
+        super();
+        if (skillSet.size() != Skill.values().length) {
+            throw new IllegalArgumentException("There are not the same number between rankSkill arguments and number of skills in Skill enum ");
+        }
+        this.name = name;
+        this.skillSet = skillSet;
+        this.isInjured = false;
     }
 
     public Staff(String name, Department department, RankStaff... rankSkills) {
@@ -32,7 +42,7 @@ public class Staff extends Fighter {
             this.skillSet.put(skill, rankSkills[indexRank++]);
         }
         this.department = department;
-        this.down = false;
+        this.isInjured = false;
     }
 
     public Staff(String name, Department department, Map<Skill, RankStaff> skillSet) {
@@ -43,7 +53,7 @@ public class Staff extends Fighter {
         this.name = name;
         this.skillSet = skillSet;
         this.department = department;
-        this.down = false;
+        this.isInjured = false;
     }
 
     public void upgradeSkill(Skill skill) {
@@ -103,7 +113,7 @@ public class Staff extends Fighter {
     @JsonIgnore
     @Transient
     public boolean canGoToMission() {
-        return !this.isDown();
+        return !this.isInjured();
     }
 
     @Override
@@ -115,14 +125,14 @@ public class Staff extends Fighter {
             if (randomInteger <= mission.getChanceDying()) {
                 this.setDead(true);
             } else if (randomInteger <= mission.getChanceInjuring()) {
-                this.down = true;
+                this.isInjured = true;
 
             }
         } else {
             if (randomInteger <= (mission.getChanceDying() * multiplierDyingFailedMission)) {
                 this.setDead(true);
             } else if (randomInteger <= (mission.getChanceInjuring() * multiplierInjuringFailedMission)) {
-                this.down = true;
+                this.isInjured = true;
 
             }
         }
@@ -135,13 +145,11 @@ public class Staff extends Fighter {
         this.getDepartment().removeStaff(this);
     }
 
-    public void setDown(Boolean down) {
-        this.down = down;
+    public Boolean isInjured() {
+        return isInjured;
     }
 
-    public Boolean isDown() {
-        return down;
+    public void setInjured(Boolean injured) {
+        isInjured = injured;
     }
-
-
 }

@@ -4,8 +4,7 @@ import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.mission.RewardResource;
 import com.motherbase.apirest.model.mission.RewardStaff;
 import com.motherbase.apirest.model.mission.RewardVehicle;
-import com.motherbase.apirest.model.motherbase.MotherBase;
-import com.motherbase.apirest.model.motherbase.department.WaitingRoom;
+import com.motherbase.apirest.model.resource.Resource;
 import com.motherbase.apirest.model.staff.RankStaff;
 import com.motherbase.apirest.model.staff.Skill;
 import com.motherbase.apirest.model.staff.Staff;
@@ -19,45 +18,54 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class NormalStrategyReward implements StrategyReward {
 
 
     @Override
-    public void executeRewardResource(MotherBase motherBase, Mission mission) {
+    public Map<Resource, Integer> executeRewardResourcePercentage(Mission mission) {
+        Map<Resource, Integer> rewardResources = new HashMap<>();
+
         for (RewardResource rewardResource : mission.getPercentRewardResources()) {
             Random rand = new Random();
             int randomInteger = rand.nextInt(101);
             if (randomInteger <= rewardResource.getPercent()) {
-                motherBase.addResource(rewardResource.getResource(), rewardResource.getNumber());
+                rewardResources.put(rewardResource.getResource(), rewardResource.getNumber());
             }
 
         }
+        return rewardResources;
     }
 
     @Override
-    public void executeRewardStuff(MotherBase motherBase, Mission mission) {
+    public Map<Resource, Integer> executeRewardResource(Mission mission) {
+        return mission.getRewardResources();
+    }
+
+    @Override
+    public List<Staff> executeRewardStuff(Mission mission) {
+        List<Staff> staffRewards = new ArrayList<>();
         for (RewardStaff rewardStaff : mission.getRewardStaffs()) {
 
             for (int i = 0; i < rewardStaff.getNumberFixRankMax(); i++) {
-                motherBase.getWaitingRoom().addStaff(createStaff(rewardStaff.getRankMax(), rewardStaff.getSkill(), motherBase.getWaitingRoom()));
-
+                staffRewards.add(createStaff(rewardStaff.getRankMax(), rewardStaff.getSkill()));
             }
         }
+        return staffRewards;
 
     }
 
     @Override
-    public void executeRewardVehicle(MotherBase motherBase, Mission mission) {
+    public List<Vehicle> executeRewardVehicle(Mission mission) {
+        List<Vehicle> vehicleRewards = new ArrayList<>();
         for (RewardVehicle rewardVehicle : mission.getRewardVehicles()) {
-            motherBase.getGarage().addVehicle(new Vehicle(rewardVehicle.getTypeVehicle()));
+            vehicleRewards.add(new Vehicle(rewardVehicle.getTypeVehicle()));
         }
+        return vehicleRewards;
     }
 
-    private Staff createStaff(RankStaff rankMax, Skill skillMax, WaitingRoom waitingRoom) {
+    private Staff createStaff(RankStaff rankMax, Skill skillMax) {
 
         Map<Skill, RankStaff> skillSet = new HashMap<>();
         for (Skill skill : Skill.values()) {
@@ -68,7 +76,7 @@ public class NormalStrategyReward implements StrategyReward {
         }
         skillSet.replace(skillMax, rankMax);
 
-        String name = "Fail";
+        String name = "Fail Name";
         try {
             JSONParser parser = new JSONParser();
             File file = ResourceUtils.getFile("classpath:jsonToParse/name.json");
@@ -84,7 +92,7 @@ public class NormalStrategyReward implements StrategyReward {
             e.printStackTrace();
         }
 
-        return new Staff(name, waitingRoom, skillSet);
+        return new Staff(name, skillSet);
 
     }
 }

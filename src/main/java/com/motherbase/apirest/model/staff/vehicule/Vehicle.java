@@ -51,7 +51,10 @@ public class Vehicle extends Fighter {
         } else {
             this.heath -= (int) ((double) mission.getChanceInjuring() * (multiplierInjuringFailedMission));
         }
-        this.setDead(this.heath <= 0);
+        if (this.heath < 0) {
+            this.heath = 0;
+        }
+        this.setDead(this.heath == 0);
     }
 
     @Enumerated(EnumType.ORDINAL)

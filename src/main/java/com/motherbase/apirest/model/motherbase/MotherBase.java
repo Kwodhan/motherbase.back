@@ -4,7 +4,7 @@ package com.motherbase.apirest.model.motherbase;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.motherbase.apirest.model.mission.Mission;
 import com.motherbase.apirest.model.mission.MissionInProgress;
-import com.motherbase.apirest.model.mission.strategyReward.NormalStrategyReward;
+import com.motherbase.apirest.model.mission.strategyReward.RewardMission;
 import com.motherbase.apirest.model.motherbase.department.*;
 import com.motherbase.apirest.model.resource.Resource;
 import com.motherbase.apirest.model.staff.Fighter;
@@ -60,8 +60,27 @@ public class MotherBase {
 
     }
 
-    public void receiveRewardMission(Mission mission) {
-        new NormalStrategyReward().executeReward(this, mission);
+    public void receiveRewardMission(RewardMission rewardMission) {
+
+        // Staffs
+        for (Staff staff : rewardMission.getRewardStuff()) {
+            this.getWaitingRoom().addStaff(staff);
+        }
+
+        // Vehicles
+        for (Vehicle vehicle : rewardMission.getRewardVehicle()) {
+            this.getGarage().addVehicle(vehicle);
+        }
+
+        // Resource
+        for (Map.Entry<Resource, Integer> entry : rewardMission.getRewardResource().entrySet()) {
+            this.addResource(entry.getKey(), entry.getValue());
+        }
+
+        // Resource not Sure
+        for (Map.Entry<Resource, Integer> entry : rewardMission.getRewardResourcePercentage().entrySet()) {
+            this.addResource(entry.getKey(), entry.getValue());
+        }
 
     }
     @Transient
