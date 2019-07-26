@@ -23,7 +23,7 @@ public class StaffServiceImpl implements StaffService {
         updatedStaff.setDepartment(staff.getDepartment());
         updatedStaff.setName(staff.getName());
         updatedStaff.setSkillSet(staff.getSkillSet());
-        updatedStaff.setDown(staff.isDown());
+        updatedStaff.setInjured(staff.isInjured());
         updatedStaff.setForce(staff.getForce());
 
         return updatedStaff;

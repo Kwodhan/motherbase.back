@@ -14,7 +14,7 @@ import java.util.Map;
 public interface StrategyReward {
 
     default RewardMission getReward(Mission mission) {
-        return new RewardMission(executeRewardResource(mission), executeRewardResourcePercentage(mission), executeRewardStuff(mission), executeRewardVehicle(mission));
+        return new RewardMission(executeRewardResource(mission), executeRewardStuff(mission), executeRewardVehicle(mission));
     }
 
 
@@ -24,13 +24,6 @@ public interface StrategyReward {
      * @return resource with integer
      */
     Map<Resource, Integer> executeRewardResource(Mission mission);
-
-    /**
-     * not sure of rewards resource
-     *
-     * @return resource with integer
-     */
-    Map<Resource, Integer> executeRewardResourcePercentage(Mission mission);
 
     List<Staff> executeRewardStuff(Mission mission);
 

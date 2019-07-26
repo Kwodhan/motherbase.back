@@ -1,5 +1,8 @@
 package com.motherbase.apirest.model.mission.strategyReward;
 
+/**
+ * Config in parameters.json
+ */
 public enum StrategyRewardEnum {
     Normal(new NormalStrategyReward());
 

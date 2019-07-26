@@ -58,7 +58,6 @@ public class MissionServiceImpl implements MissionService {
 
     @Transactional
     public Mission create(Mission mission) {
-
         return missionRepository.save(mission);
     }
 
@@ -69,10 +68,10 @@ public class MissionServiceImpl implements MissionService {
         updatedMission.setDescription(mission.getDescription());
         updatedMission.setDurationCompleted(mission.getDurationCompleted());
         updatedMission.setForce(mission.getForce());
-        updatedMission.setPercentRewardResources(mission.getPercentRewardResources());
         updatedMission.setRankMission(mission.getRankMission());
         updatedMission.setRewardStaffs(mission.getRewardStaffs());
         updatedMission.setRewardResources(mission.getRewardResources());
+        updatedMission.setRewardVehicles(mission.getRewardVehicles());
         updatedMission.setMissionInProgresses(mission.getMissionInProgresses());
         return updatedMission;
     }
@@ -83,10 +82,10 @@ public class MissionServiceImpl implements MissionService {
 
         if (!motherBase.canTakeMission(mission)) {
             return false;
-
         }
 
-        // Search Fighters in 3 tables (Staff, Vehicle, Metal gear)
+        // Search Fighters in 3 tables (Staff, Vehicle, Metal gear) Beurk!
+        // TODO : c'est moche
         List<Fighter> fighters = new ArrayList<>();
         for (Long id : fightersId) {
             Fighter fighter = staffRepository.findById(id).orElse(null);
@@ -125,49 +124,62 @@ public class MissionServiceImpl implements MissionService {
     public FinishMissionResponse finishMission(MotherBase motherBase, Mission mission) {
 
         RewardMission rewardMission = null;
-        if (motherBase.isFinishMission(mission)) {
-            StrategyAffectStaff strategyAffectStaff = StrategyAffectStaffEnum.valueOf(ParameterManager.getValue("strategyAffectStaff").toString()).getStrategyAffectStaff();
-            StrategyReward strategyReward = StrategyRewardEnum.valueOf(ParameterManager.getValue("strategyReward").toString()).getStrategyReward();
+        if (!motherBase.isFinishMission(mission)) {
+            return new FinishMissionResponse(null, StateMission.NotFinish, rewardMission);
+        }
+        Object strategyStaffConf = ParameterManager.getValue("strategyAffectStaff");
+        if (strategyStaffConf == null) {
+            throw new IllegalStateException();
+        }
+        StrategyAffectStaff strategyAffectStaff = StrategyAffectStaffEnum.valueOf(strategyStaffConf.toString()).getStrategyAffectStaff();
 
-            StateMission stateMission;
+        Object strategyRewardConf = ParameterManager.getValue("strategyReward");
+        if (strategyRewardConf == null) {
+            throw new IllegalStateException();
+        }
+        StrategyReward strategyReward = StrategyRewardEnum.valueOf(strategyRewardConf.toString()).getStrategyReward();
 
-            if (motherBase.isSuccessMission(mission)) {
-                rewardMission = strategyReward.getReward(mission);
-                motherBase.receiveRewardMission(rewardMission);
-                stateMission = StateMission.Success;
+        StateMission stateMission;
 
-            } else {
-                stateMission = StateMission.Failed;
-            }
-            MissionInProgress toDelete = missionInProgressRepository.findById(new MissionInProgressID(mission.getId(), motherBase.getId())).orElse(null);
+        MissionInProgress missionInProgress = missionInProgressRepository.findById(new MissionInProgressID(mission.getId(), motherBase.getId())).orElse(null);
 
-            // Injured Staff and Destroy Vehicle
+        if (missionInProgress == null) {
+            return new FinishMissionResponse(null, StateMission.Failed, rewardMission);
+        }
 
-            List<Fighter> fighters = strategyAffectStaff.executeAffect(toDelete, (stateMission.equals(StateMission.Success)));
+        if (motherBase.isSuccessMission(mission)) {
+            rewardMission = strategyReward.getReward(mission);
+            motherBase.receiveRewardMission(rewardMission);
+            stateMission = StateMission.Success;
 
-            List<Fighter> copy = new ArrayList<>(fighters);
+        } else {
+            stateMission = StateMission.Failed;
+        }
 
-            for (Fighter fighter : toDelete.getFighters()) {
-                fighter.setMissionInProgress(null);
-                if (fighter.isDead()) {
-                    // TODO : It's ugly !!
-                    fighter.dead();
-                    Staff deadStaff = staffRepository.findById(fighter.getId()).orElse(null);
-                    if (deadStaff != null) {
-                        this.staffRepository.delete(deadStaff);
-                    } else {
-                        Vehicle deadVehicle = vehicleRepository.findById(fighter.getId()).orElse(null);
-                        this.vehicleRepository.delete(deadVehicle);
-                    }
+        // Injured Staff and Destroy Vehicle
+
+        List<Fighter> fighters = strategyAffectStaff.executeAffect(missionInProgress, (stateMission.equals(StateMission.Success)));
+
+        List<Fighter> copy = new ArrayList<>(fighters);
+
+        for (Fighter fighter : missionInProgress.getFighters()) {
+            fighter.setMissionInProgress(null);
+            if (fighter.isDead()) {
+                // TODO : It's ugly !!
+                fighter.dead();
+                Staff deadStaff = staffRepository.findById(fighter.getId()).orElse(null);
+                if (deadStaff != null) {
+                    this.staffRepository.delete(deadStaff);
+                } else {
+                    Vehicle deadVehicle = vehicleRepository.findById(fighter.getId()).orElse(null);
+                    this.vehicleRepository.delete(deadVehicle);
                 }
             }
-
-            missionInProgressRepository.delete(toDelete);
-
-
-            return new FinishMissionResponse(copy, stateMission, rewardMission);
         }
-        return new FinishMissionResponse(null, StateMission.NotFinish, rewardMission);
+
+        missionInProgressRepository.delete(missionInProgress);
+
+        return new FinishMissionResponse(copy, stateMission, rewardMission);
 
     }
 }

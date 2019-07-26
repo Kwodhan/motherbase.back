@@ -48,8 +48,8 @@ public class MissionInProgress {
         this.dateBegin = dateBegin;
     }
 
-    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("motherBaseId")
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_mother_base")
     public MotherBase getMotherBase() {
         return motherBase;

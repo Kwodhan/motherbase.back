@@ -6,13 +6,13 @@ import com.motherbase.apirest.model.resource.Resource;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "MISSION_REWARD_RESOURCES_PERCENT")
+@Table(name = "MISSION_REWARD_RESOURCES")
 public class RewardResource {
-    Long id;
-    Resource resource;
-    Integer number;
-    Integer percent;
-    Mission mission;
+    private Long id;
+    private Resource resource;
+    private Integer number;
+    private Integer percent;
+    private Mission mission;
 
     public RewardResource(Resource resource, Integer number, Integer percent) {
         if (percent > 100 || percent < 0) {
@@ -21,6 +21,12 @@ public class RewardResource {
         this.resource = resource;
         this.number = number;
         this.percent = percent;
+    }
+
+    public RewardResource(Resource resource, Integer number) {
+        this.resource = resource;
+        this.number = number;
+        this.percent = 100;
     }
 
     public RewardResource() {

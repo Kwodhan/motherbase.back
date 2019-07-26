@@ -12,17 +12,14 @@ import java.util.Map;
  */
 public class RewardMission {
 
-    Map<Resource, Integer> rewardResource;
+    private Map<Resource, Integer> rewardResource;
 
-    Map<Resource, Integer> rewardResourcePercentage;
+    private List<Staff> rewardStuff;
 
-    List<Staff> rewardStuff;
+    private List<Vehicle> rewardVehicle;
 
-    List<Vehicle> rewardVehicle;
-
-    public RewardMission(Map<Resource, Integer> rewardResource, Map<Resource, Integer> rewardResourcePercentage, List<Staff> rewardStuff, List<Vehicle> rewardVehicle) {
+    protected RewardMission(Map<Resource, Integer> rewardResource, List<Staff> rewardStuff, List<Vehicle> rewardVehicle) {
         this.rewardResource = rewardResource;
-        this.rewardResourcePercentage = rewardResourcePercentage;
         this.rewardStuff = rewardStuff;
         this.rewardVehicle = rewardVehicle;
     }
@@ -35,13 +32,6 @@ public class RewardMission {
         this.rewardResource = rewardResource;
     }
 
-    public Map<Resource, Integer> getRewardResourcePercentage() {
-        return rewardResourcePercentage;
-    }
-
-    public void setRewardResourcePercentage(Map<Resource, Integer> rewardResourcePercentage) {
-        this.rewardResourcePercentage = rewardResourcePercentage;
-    }
 
     public List<Staff> getRewardStuff() {
         return rewardStuff;

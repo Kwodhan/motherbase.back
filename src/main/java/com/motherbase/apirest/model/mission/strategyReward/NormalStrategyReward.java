@@ -15,7 +15,6 @@ import org.json.simple.parser.ParseException;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
@@ -24,23 +23,21 @@ public class NormalStrategyReward implements StrategyReward {
 
 
     @Override
-    public Map<Resource, Integer> executeRewardResourcePercentage(Mission mission) {
+    public Map<Resource, Integer> executeRewardResource(Mission mission) {
         Map<Resource, Integer> rewardResources = new HashMap<>();
 
-        for (RewardResource rewardResource : mission.getPercentRewardResources()) {
+        for (RewardResource rewardResource : mission.getRewardResources()) {
+            if (rewardResource.getPercent() == 100) {
+                rewardResources.put(rewardResource.getResource(), rewardResource.getNumber());
+                continue;
+            }
             Random rand = new Random();
             int randomInteger = rand.nextInt(101);
             if (randomInteger <= rewardResource.getPercent()) {
                 rewardResources.put(rewardResource.getResource(), rewardResource.getNumber());
             }
-
         }
         return rewardResources;
-    }
-
-    @Override
-    public Map<Resource, Integer> executeRewardResource(Mission mission) {
-        return mission.getRewardResources();
     }
 
     @Override
@@ -84,11 +81,7 @@ public class NormalStrategyReward implements StrategyReward {
             Random rand = new Random();
             int indexRandomName = rand.nextInt(a.size() + 1);
             name = a.get(indexRandomName).toString();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (ParseException | IOException e) {
             e.printStackTrace();
         }
 

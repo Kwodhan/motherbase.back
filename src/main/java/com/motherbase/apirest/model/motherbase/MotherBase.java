@@ -14,8 +14,10 @@ import com.motherbase.apirest.model.staff.vehicule.Vehicle;
 import javax.persistence.*;
 import java.util.*;
 
+
 @Entity
 public class MotherBase {
+
     private Long id;
     private String pseudo;
     private Map<Resource, Integer> resources;
@@ -74,11 +76,6 @@ public class MotherBase {
 
         // Resource
         for (Map.Entry<Resource, Integer> entry : rewardMission.getRewardResource().entrySet()) {
-            this.addResource(entry.getKey(), entry.getValue());
-        }
-
-        // Resource not Sure
-        for (Map.Entry<Resource, Integer> entry : rewardMission.getRewardResourcePercentage().entrySet()) {
             this.addResource(entry.getKey(), entry.getValue());
         }
 
@@ -154,15 +151,13 @@ public class MotherBase {
         Random rand = new Random();
         int randomInteger = rand.nextInt(101);
         return randomInteger <= getPercentageSuccess(mission);
-
-
     }
 
     public double getPercentageSuccess(Mission mission) {
         MissionInProgress missionInProgress = this.getMissionInProgress(mission);
 
         int force = 0;
-        double percentageSuccess = 0;
+        double percentageSuccess;
         for (Fighter fighter : missionInProgress.getFighters()) {
             force += fighter.getForce();
         }
@@ -186,7 +181,11 @@ public class MotherBase {
      * @return can be null if the motherBase doesn't have the mission
      */
     public MissionInProgress getMissionInProgress(Mission mission) {
-        return this.getMissionInProgress().stream().filter(x -> x.getMission().getId().equals(mission.getId())).findFirst().orElse(null);
+        return this.getMissionInProgress()
+                .stream()
+                .filter(x -> x.getMission().getId().equals(mission.getId()))
+                .findFirst()
+                .orElse(null);
     }
 
     public void removeFighter(Staff staff) {
@@ -208,18 +207,18 @@ public class MotherBase {
     }
 
 
-    public Integer addResource(Resource resource, Integer add) {
+    private Integer addResource(Resource resource, Integer add) {
         Integer actualRes = this.resources.get(resource);
         return this.resources.replace(resource, actualRes + add);
 
     }
 
-    public Integer removeResource(Resource resource, Integer add) {
+    private Integer removeResource(Resource resource, Integer add) {
         Integer actualRes = this.resources.get(resource);
         return this.resources.replace(resource, actualRes - add);
     }
 
-    public Integer getResource(Resource resource) {
+    private Integer getResource(Resource resource) {
         return this.resources.get(resource);
     }
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "motherBase")
@@ -288,7 +287,6 @@ public class MotherBase {
     @CollectionTable
     @MapKeyClass(Resource.class)
     @MapKeyEnumerated(EnumType.ORDINAL)
-    // TODO : KEY to column name
     public Map<Resource, Integer> getResources() {
         return resources;
     }

@@ -1,26 +1,18 @@
 package com.motherbase.apirest.model.mission;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.motherbase.apirest.model.resource.Resource;
 
 import javax.persistence.*;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 @Entity
 public class Mission {
     private Long id;
 
-    private Map<Resource, Integer> rewardResources;
+    private Set<RewardResource> rewardResources;
     private Set<RewardStaff> rewardStaffs;
     private Set<RewardVehicle> rewardVehicles;
-    /**
-     * reward resource not sure
-     */
-    private Set<RewardResource> percentRewardResources;
-
 
     private Integer force;
 
@@ -43,104 +35,45 @@ public class Mission {
     }
 
     public Mission(Integer force, String description, Integer rankMission, Duration durationCompleted,
-                   Set<RewardStaff> rewardStaffs, Set<RewardResource> percentRewardResources, Integer... rewards) {
-        if (rewards.length != Resource.values().length) {
-            throw new IllegalArgumentException("There are not the same number between rewards arguments and number of resources in Resource enum ");
+                   Set<RewardStaff> rewardStaffs, Set<RewardResource> rewardResources, Set<RewardVehicle> rewardVehicles) {
+        this(force, description, rankMission, durationCompleted, rewardStaffs, rewardResources);
+
+        for (RewardVehicle rewardVehicle : rewardVehicles) {
+            rewardVehicle.setMission(this);
         }
-        this.force = force;
-        this.description = description;
-        this.rankMission = rankMission;
-        this.durationCompleted = durationCompleted;
-        this.percentRewardResources = percentRewardResources;
-        this.maxPercentageSuccess = 100;
-        this.chanceDying = 5;
-        this.chanceInjuring = 10;
-        for (RewardStaff rewardStaff : rewardStaffs) {
-            rewardStaff.setMission(this);
-        }
-        for (RewardResource rewardResource : percentRewardResources) {
-            rewardResource.setMission(this);
-        }
-        this.rewardStaffs = rewardStaffs;
-        this.rewardResources = new HashMap<>();
-        int indexResource = 0;
-        for (Resource resource : Resource.values()) {
-            this.rewardResources.put(resource, rewards[indexResource++]);
-        }
+        this.rewardVehicles = rewardVehicles;
     }
 
 
     public Mission(Integer force, String description, Integer rankMission, Duration durationCompleted,
-                   Set<RewardStaff> rewardStaffs, Set<RewardResource> percentRewardResources, Set<RewardVehicle> rewardVehicles, Integer... rewards) {
-        if (rewards.length != Resource.values().length) {
-            throw new IllegalArgumentException("There are not the same number between rewards arguments and number of resources in Resource enum ");
-        }
+                   Set<RewardStaff> rewardStaffs, Set<RewardResource> rewardResources) {
         this.force = force;
         this.description = description;
         this.rankMission = rankMission;
         this.durationCompleted = durationCompleted;
-        this.percentRewardResources = percentRewardResources;
         this.maxPercentageSuccess = 100;
         this.chanceDying = 5;
         this.chanceInjuring = 10;
+
         for (RewardStaff rewardStaff : rewardStaffs) {
             rewardStaff.setMission(this);
         }
-        for (RewardVehicle rewardVehicle : rewardVehicles) {
-            rewardVehicle.setMission(this);
-        }
-        for (RewardResource rewardResource : percentRewardResources) {
+        for (RewardResource rewardResource : rewardResources) {
             rewardResource.setMission(this);
         }
+
         this.rewardStaffs = rewardStaffs;
-        this.rewardResources = new HashMap<>();
-        int indexResource = 0;
-        for (Resource resource : Resource.values()) {
-            this.rewardResources.put(resource, rewards[indexResource++]);
-        }
-    }
-
-    public Mission(Integer force, String description, Integer rankMission, Duration durationCompleted, Set<RewardVehicle> rewardVehicles, Integer... rewards) {
-        if (rewards.length != Resource.values().length) {
-            throw new IllegalArgumentException("There are not the same number between rewards arguments and number of resources in Resource enum ");
-        }
-        this.force = force;
-        this.description = description;
-        this.rankMission = rankMission;
-        this.durationCompleted = durationCompleted;
-        this.rewardVehicles = rewardVehicles;
-        this.maxPercentageSuccess = 100;
-        this.chanceDying = 5;
-        this.chanceInjuring = 10;
-        for (RewardVehicle rewardVehicle : rewardVehicles) {
-            rewardVehicle.setMission(this);
-        }
-        this.rewardResources = new HashMap<>();
-        int indexResource = 0;
-        for (Resource resource : Resource.values()) {
-            this.rewardResources.put(resource, rewards[indexResource++]);
-        }
-    }
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable
-    @MapKeyClass(Resource.class)
-    @MapKeyEnumerated(EnumType.ORDINAL)
-    public Map<Resource, Integer> getRewardResources() {
-        return rewardResources;
-    }
-
-    public void setRewardResources(Map<Resource, Integer> rewardResources) {
         this.rewardResources = rewardResources;
+
     }
 
     @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    public Set<RewardResource> getPercentRewardResources() {
-        return percentRewardResources;
+    public Set<RewardResource> getRewardResources() {
+        return rewardResources;
     }
 
-    public void setPercentRewardResources(Set<RewardResource> percentRewardResources) {
-        this.percentRewardResources = percentRewardResources;
+    public void setRewardResources(Set<RewardResource> rewardResources) {
+        this.rewardResources = rewardResources;
     }
 
     @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -171,7 +104,6 @@ public class Mission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID")
     public Long getId() {
         return id;
     }

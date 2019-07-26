@@ -1,5 +1,8 @@
 package com.motherbase.apirest.model.mission.strategyAffectStaff;
 
+/**
+ * Config in parameters.json
+ */
 public enum StrategyAffectStaffEnum {
 
     Normal(new NormalStrategyAffectStaff());
